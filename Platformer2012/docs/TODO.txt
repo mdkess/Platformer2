@@ -1,0 +1,16 @@
+Ideas:
+ - Particle emitters.
+ - Particle effect footsteps.
+ - Walking animation
+ - Animated tiles
+ - Water physics.
+ - AI sensors.
+ - AI actors!
+ - Inventory
+ - Projectiles.
+ - Icons over actions ("open door", "open chest", "get item", "pull switch", etc.)
+ - Fixed rate physics update.
+ 
+BUGS
+
+Can't double jump when falling with block above head.
