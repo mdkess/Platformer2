@@ -7,7 +7,7 @@ public class Constants {
     public static final float AIR_RESISTENCE = 0.9f;
     public static final float FRICTION = 0.05f;
     public static final int MAX_COLLISIONS = 8;
-    public static final int ZOOM_FACTOR = 4;
+    public static final int ZOOM_FACTOR = 3;
     public static final float DRAG = 1.7f;
     public static final float DUMMY_FRICTION = 0.8f;
     public static final float HERO_MAX_FORCE = 100.0f;
@@ -19,4 +19,5 @@ public class Constants {
     
     public static final String LOG = "mdkess-platformer";
     public static final int SKIP_FRAMES = 3;
+	public static final int TILE_SIZE = 8;
 }

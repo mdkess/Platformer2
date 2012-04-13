@@ -3,6 +3,8 @@ package ca.kess.games.screens;
 import java.util.Random;
 
 import ca.kess.games.Constants;
+import ca.kess.games.camera.GameCamera;
+import ca.kess.games.camera.MarioCamera;
 import ca.kess.games.entities.ChestEntity;
 import ca.kess.games.entities.GameEntity;
 import ca.kess.games.graphics.GraphicsCache;
@@ -19,14 +21,14 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 
 public class GameScreen extends PlatformerScreen {
     private SpriteBatch mSpriteBatch;
     private SpriteBatch mDebugSpriteBatch;
-    private OrthographicCamera mCamera;
+    private GameCamera mCamera;
     private WorldLevel mWorldLevel;
     private final GameEntity mHero;
     private Random mRandom = new Random();
@@ -104,8 +106,7 @@ public class GameScreen extends PlatformerScreen {
         };
         
         
-        mCamera = new OrthographicCamera(Gdx.graphics.getWidth()/(8*Constants.ZOOM_FACTOR), Gdx.graphics.getHeight()/(8*Constants.ZOOM_FACTOR));
-        mCamera.position.set(0, 0, 0);
+        
         
         mWorldLevel = new WorldLevel(this, "data/map.png");
         
@@ -114,6 +115,9 @@ public class GameScreen extends PlatformerScreen {
         mHero.getPosition().set(2, 2);
         InputHandler inputHandler = new InputHandler(mHero);
         mHero.setInputHandler(inputHandler);
+        
+        mCamera = new MarioCamera(new OrthographicCamera(Gdx.graphics.getWidth()/(Constants.TILE_SIZE*Constants.ZOOM_FACTOR), Gdx.graphics.getHeight()/(Constants.TILE_SIZE*Constants.ZOOM_FACTOR)), mHero
+            , new Rectangle(300, 200, Gdx.graphics.getWidth() - 600, Gdx.graphics.getHeight() - 400));
         
         for(int i = 0; i < 128; i += 16) {
             GameEntity obj = mWorldLevel.getGameEntityPool().getGameEntity().initialize(
@@ -268,9 +272,6 @@ public class GameScreen extends PlatformerScreen {
         mReviveButton.height = size;
     }
         
-        
-    public OrthographicCamera getCamera() { return mCamera; }
-    
     private float mTotalTime = 0.0f;
     private float mAccumulator = 0.0f;
     @Override
@@ -293,16 +294,14 @@ public class GameScreen extends PlatformerScreen {
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
         
-        Vector2 pos = mHero.getPosition();
-        mCamera.position.set(pos.x, pos.y, 0);
         
         mCamera.update();
         
         mTotalTime += Gdx.graphics.getDeltaTime();
         
-        mSpriteBatch.setProjectionMatrix(mCamera.combined);
+        mSpriteBatch.setProjectionMatrix(mCamera.getCombined());
         mSpriteBatch.begin();
-        mWorldLevel.render(mSpriteBatch);
+        mCamera.render(mSpriteBatch, mWorldLevel);
         mSpriteBatch.end();
         
         mStage.draw();
@@ -324,23 +323,14 @@ public class GameScreen extends PlatformerScreen {
         mFont.draw(mDebugSpriteBatch, "On Ground: " + mHero.isOnGround(), 10, 320);
         mDebugSpriteBatch.end();
     }
-    
-    private void drawUserInterface() {
-        /*
-        mGUISpriteBatch.begin();
-        for(Button button : mButtons) {
-            button.render(mGUISpriteBatch);
-        }
-        mGUISpriteBatch.end();
-        */
-    }
-    
+
     @Override
     public void resize(int width, int height) {
         Gdx.app.log(Constants.LOG, "GameScreen::resise(" + width + ", " + height + ")");
         mStage.setViewport(width, height, true);
         initGUI();
-        mCamera.setToOrtho(false, Gdx.graphics.getWidth()/(8*Constants.ZOOM_FACTOR), Gdx.graphics.getHeight()/(8*Constants.ZOOM_FACTOR));
+        mCamera.onResize(width, height);
+        
     }
     
     @Override

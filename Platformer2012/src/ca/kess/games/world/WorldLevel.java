@@ -19,10 +19,11 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 
-public class WorldLevel implements IRenderable, IUpdateable, Disposable {
+public class WorldLevel implements IUpdateable, Disposable {
 	private TileSet mTileSet;
     private Tile[][] mTiles;
     private GameScreen mGame;
@@ -46,9 +47,9 @@ public class WorldLevel implements IRenderable, IUpdateable, Disposable {
         mEntitiesToRemove = new LinkedList<GameEntity>();
         mTimers = new LinkedList<Timer>();
         mFinishedTimers = new LinkedList<Timer>();
-        
+
         mTileSet = new TileSet();
-        
+
         mGame = game;
         Pixmap pixmap = new Pixmap(Gdx.files.internal(mapLocation));
         mTiles = new Tile[pixmap.getWidth()][pixmap.getHeight()];
@@ -128,20 +129,11 @@ public class WorldLevel implements IRenderable, IUpdateable, Disposable {
     
     //private Vector2 tmp1 = new Vector2();
     //private Vector2 tmp2 = new Vector2();
-    @Override
-    public void render(SpriteBatch b) {
+    public void render(SpriteBatch b, int leftX, int bottomY, int rightX, int topY) {
         b.setColor(1,1,1,1);
-        float mx = mGame.getCamera().position.x;
-        float my = mGame.getCamera().position.y;
-        float width = Gdx.graphics.getWidth()/(8*Constants.ZOOM_FACTOR);
-        float height = Gdx.graphics.getWidth()/(8*Constants.ZOOM_FACTOR);
-        int x0 = Math.max((int) (mx - width/2), 0);
-        int x1 = Math.min((int) (1+mx + width/2), mTiles.length);
-        int y0 = Math.max((int) (my - height/2), 0);
-        int y1 = Math.min((int) (my + height/2), mTiles[0].length);
-        
-        for(int x = x0; x < x1; ++x) {
-            for(int y = y0; y < y1; ++y) {
+
+        for(int x = leftX; x < rightX; ++x) {
+            for(int y = bottomY; y < topY; ++y) {
                 mTiles[x][y].render(b, x, y);
             }
         }
@@ -305,6 +297,13 @@ public class WorldLevel implements IRenderable, IUpdateable, Disposable {
 		for(GameEntity entity : mGameEntities) {
 			entity.dispose();
 		}
+	}
+
+	public int getWidth() {
+		return mTiles.length;
+	}
+	public int getHeight() {
+		return mTiles[0].length;
 	}
 
 
