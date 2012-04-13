@@ -4,7 +4,6 @@ import ca.kess.games.timers.DeathFadeTimer;
 import ca.kess.games.world.WorldLevel;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class ChestEntity extends GameEntity {
     public enum ChestState {

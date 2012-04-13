@@ -3,7 +3,6 @@ package ca.kess.games.world;
 import ca.kess.games.entities.GameEntity;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.math.Vector2;
 
 public class DoorTile extends AnimatedTile {
     private enum State {

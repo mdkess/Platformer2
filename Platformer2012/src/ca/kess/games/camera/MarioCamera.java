@@ -3,7 +3,6 @@ package ca.kess.games.camera;
 import ca.kess.games.Constants;
 import ca.kess.games.entities.GameEntity;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -23,24 +22,16 @@ public class MarioCamera extends FixedCamera {
 	public void update() {
 		Vector3 cameraPos = getCamera().position;
 		Vector2 entityPos = getTarget().getPosition();
-		
+
 		float f = Constants.ZOOM_FACTOR * Constants.TILE_SIZE;
 		//Transform entity position to screen space.
 		float cameraX = cameraPos.x; //in world space (1 = 1 tile)
 		float cameraY = cameraPos.y;
-		
+
 		//Convert to screen space.
 		float offsetX = (entityPos.x - cameraPos.x)*f;
 		float offsetY = (entityPos.y - cameraPos.y)*f;
-		
-		
-		
-		//Camera is always in the middle of the screen
-		float mx = Gdx.graphics.getWidth()/2;
-		float my = Gdx.graphics.getHeight()/2;
-		
-		Gdx.app.log(Constants.LOG, offsetX + " " + offsetY + " " + mx + " " + my);
-		
+
 		if(offsetX > mArea.width/2) {
 			cameraX += (offsetX - (mArea.width/2))/f;
 		} else if (offsetX < -mArea.width/2) {
@@ -53,25 +44,8 @@ public class MarioCamera extends FixedCamera {
 			cameraY += (offsetY + (mArea.height/2))/f;
 		}
 		
-		//only move the camera if the entity is outside of the area.
-		/*
-		if(targetY < mArea.y) {
-			targetY = mArea.y;
-		} else if(targetY > mArea.y + mArea.height) {
-			targetY = mArea.y + mArea.height;
-		}
-		
-		if(targetX < mArea.x) {
-			targetX = mArea.x;
-		} else if(targetX > mArea.x + mArea.width) {
-			targetX = mArea.x + mArea.width;
-		}*/
-		
-		
-        getCamera().position.set(cameraX, cameraY, 0);
-		//getCamera().position.set(offsetX, offsetY, 0);
-		//getCamera().position.set(entityPos.x, entityPos.y, 0);
-        getCamera().update();
+		getCamera().position.set(cameraX, cameraY, 0);
+		getCamera().update();
 	}
 	
 	@Override

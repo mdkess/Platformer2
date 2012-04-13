@@ -4,12 +4,12 @@ import ca.kess.games.Constants;
 import ca.kess.games.input.InputHandler;
 import ca.kess.games.interfaces.IRenderable;
 import ca.kess.games.interfaces.IUpdateable;
+import ca.kess.games.world.Tile;
 import ca.kess.games.world.WorldLevel;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 
@@ -139,18 +139,10 @@ public class GameEntity implements IRenderable, IUpdateable, Disposable {
     
     //Open a door, if it's in front of the entity
     //TODO: This is sort of hacky.
-    private Vector2 tmp1 = new Vector2();
-    private Vector2 tmp2 = new Vector2();
-    
+
     public void openDoor() {
         Gdx.app.log(Constants.LOG, "GameEntity::openDoor");
-        /*
-        if(!(mFacingLeft && mIsOnWallLeft)) {
-            return;
-        }
-        if(!(!mFacingLeft && mIsOnWallRight)) {
-            return;
-        } */
+
         float x = mPosition.x;
         if(mFacingLeft) {
             x -= 0.1;
@@ -158,16 +150,11 @@ public class GameEntity implements IRenderable, IUpdateable, Disposable {
             x += mAABB.x + 0.1;
         }
         float y = mAABB.y * 0.5f + mPosition.y;
-        
-        int tileX = (int) x;
-        int tileY = (int) y;
-        
-        //if(collidesWith(tmp1.set(x, y), tmp2.set(1, 1))) {
-            //return ;
-        //}
-        
-        
-        mWorldLevel.getTile((int)Math.floor(x), (int)Math.floor(y)).onInteraction(this);
+
+        Tile tile = mWorldLevel.getTile((int)Math.floor(x), (int)Math.floor(y));
+        if(tile != null) {
+        	tile.onInteraction(this);
+        }
     }
     
     

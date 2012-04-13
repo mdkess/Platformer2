@@ -8,7 +8,6 @@ import java.util.Random;
 import ca.kess.games.Constants;
 import ca.kess.games.entities.GameEntity;
 import ca.kess.games.entities.GameEntityPool;
-import ca.kess.games.interfaces.IRenderable;
 import ca.kess.games.interfaces.IUpdateable;
 import ca.kess.games.screens.GameScreen;
 import ca.kess.games.timers.DeathFadeTimer;
@@ -19,7 +18,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 
