@@ -9,7 +9,7 @@ public class DeathFadeTimer extends FadeOutTimer {
 
     @Override
     public void onFinish() {
-        getEntity().remove();
+        GameEntity.RecycleEntity(getEntity());
         super.onFinish();
     }
 

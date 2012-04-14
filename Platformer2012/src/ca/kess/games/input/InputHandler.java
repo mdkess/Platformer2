@@ -10,7 +10,7 @@ public class InputHandler {
     public InputHandler(GameEntity entity) {
         mEntity = entity;
     }
-    private boolean mIsDead = false;
+
     private boolean hasInteracted = false;
     private boolean hasDoubleJumped = false;
     private boolean hasWallJumped = false;
@@ -44,7 +44,6 @@ public class InputHandler {
     public void setResetPressed(boolean pressed) {
     	Gdx.app.log(Constants.LOG, "InputHandler::setResetPressed(" + pressed + ")");
         mResetPressed = pressed;
-        mIsDead = false;
     }
     public void setSuicidePressed(boolean pressed) {
     	Gdx.app.log(Constants.LOG, "InputHandler::setSuicidePressed(" + pressed + ")");
@@ -52,20 +51,21 @@ public class InputHandler {
     }
     
     public void update() {
-        if(mResetPressed) {
-            mEntity.restore();
+        if(mResetPressed && !mEntity.isAlive()) {
+            mEntity.resurrect();
             mEntity.setVisible(true);
             mResetPressed = false;
         }
-        if(mEntity.isDead()) return;
-        float maximumSpeed = Constants.HERO_MAX_FORCE;
+
+        if(!mEntity.isAlive()) return;
+        float maximumForce = Constants.HERO_MAX_FORCE;
         
-        float vx = 0;
+        float forceX = 0;
         //if(Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W)) {
         //    vx = mEntity.getVelocityX();
         //}
         //float vy = mEntity.getVelocityY();
-        float vy = 0;
+        float forceY = 0;
         
         if(mEntity.isOnGround()) {
             hasDoubleJumped = false;
@@ -74,20 +74,20 @@ public class InputHandler {
         }
         
         if(mLeftPressed) {
-            vx -= maximumSpeed;
+            forceX -= maximumForce;
         }
         if(mRightPressed) {
-            vx += maximumSpeed;
+            forceX += maximumForce;
         }
 
         
         if(mJumpPressed) {
             if(mEntity.isOnGround()) {
-                vy += Constants.HERO_JUMP_FORCE;
+                forceY += Constants.HERO_JUMP_FORCE;
                 mJumpFrames = Constants.HERO_JUMP_THRUST_FRAMES;
             } else if(mJumpFrames > 0) {
                 --mJumpFrames;
-                vy += Constants.HERO_JUMP_FORCE;
+                forceY += Constants.HERO_JUMP_FORCE;
             } else {
                 /*
                 if(mEntity.isOnWallLeft()) {
@@ -134,9 +134,7 @@ public class InputHandler {
             hasInteracted = false;
         }
         
-        //mEntity.setVelocityX(vx);
-        //mEntity.setVelocityY(vy);
-        mEntity.applyForce(vx, vy);
+        mEntity.applyForce(forceX, forceY);
 
         if(mLeftPressed || mRightPressed || mJumpPressed) {
             mEntity.setApplyDrag(false);
@@ -144,10 +142,15 @@ public class InputHandler {
             mEntity.setApplyDrag(true);
         }
         
+        if(mLeftPressed) {
+            mEntity.setDirection(GameEntity.Direction.LEFT);
+        } else if(mRightPressed) {
+            mEntity.setDirection(GameEntity.Direction.RIGHT);
+        }
+        
         if(mSuicidePressed) {
             mSuicidePressed = false;
-            if(!mIsDead) {
-                mIsDead = true;
+            if(mEntity.isAlive()) {
                 mEntity.kill();
                 mEntity.setVisible(false);
             }

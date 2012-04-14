@@ -110,15 +110,20 @@ public class GameScreen extends PlatformerScreen {
         
         mWorldLevel = new WorldLevel(this, "data/map.png");
         
-        mHero = mWorldLevel.getGameEntityPool().getGameEntity().initialize(new Animation(0.0f, GraphicsCache.getChar(10,0)), mWorldLevel, 0);
-        //mHero.getAABB().set(2,2);
-        mHero.getPosition().set(2, 2);
+        mHero = GameEntity.GetGameEntity().initialize(mWorldLevel,
+                2, 2,
+                0, 0,
+                1, 1,
+                1,
+                0,
+                new Animation(0.0f, GraphicsCache.getChar(10,0)));
         InputHandler inputHandler = new InputHandler(mHero);
         mHero.setInputHandler(inputHandler);
+        mWorldLevel.addEntity(mHero);
         
         mCamera = new MarioCamera(new OrthographicCamera(Gdx.graphics.getWidth()/(Constants.TILE_SIZE*Constants.ZOOM_FACTOR), Gdx.graphics.getHeight()/(Constants.TILE_SIZE*Constants.ZOOM_FACTOR)), mHero
             , new Rectangle(300, 200, Gdx.graphics.getWidth() - 600, Gdx.graphics.getHeight() - 400));
-        
+        /*
         for(int i = 0; i < 128; i += 16) {
             GameEntity obj = mWorldLevel.getGameEntityPool().getGameEntity().initialize(
                     new Animation(0.5f, GraphicsCache.getObject(mRandom.nextInt(14), mRandom.nextInt(14))), mWorldLevel, 0.5f);
@@ -135,8 +140,8 @@ public class GameScreen extends PlatformerScreen {
                     new Animation(0.0f, GraphicsCache.getObject(2, 0)), mWorldLevel, 0.5f, obj);
             chest.getPosition().set(i, 100);
             mWorldLevel.addEntity(chest);
-        }
-        mWorldLevel.addEntity(mHero);
+        }*/
+        
         TextureRegion flip = new TextureRegion(GraphicsCache.getInterface(5, 2));
         flip.flip(true, false);
         

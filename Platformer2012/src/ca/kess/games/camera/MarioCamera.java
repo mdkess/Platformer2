@@ -18,10 +18,11 @@ public class MarioCamera extends FixedCamera {
 		mArea = area;
 	}
 
+	private Vector2 update_entityPos = new Vector2();
 	@Override
 	public void update() {
 		Vector3 cameraPos = getCamera().position;
-		Vector2 entityPos = getTarget().getPosition();
+		update_entityPos.set(getTarget().getPositionX(), getTarget().getPositionY());
 
 		float f = Constants.ZOOM_FACTOR * Constants.TILE_SIZE;
 		//Transform entity position to screen space.
@@ -29,8 +30,8 @@ public class MarioCamera extends FixedCamera {
 		float cameraY = cameraPos.y;
 
 		//Convert to screen space.
-		float offsetX = (entityPos.x - cameraPos.x)*f;
-		float offsetY = (entityPos.y - cameraPos.y)*f;
+		float offsetX = (update_entityPos.x - cameraPos.x)*f;
+		float offsetY = (update_entityPos.y - cameraPos.y)*f;
 
 		if(offsetX > mArea.width/2) {
 			cameraX += (offsetX - (mArea.width/2))/f;
@@ -43,6 +44,8 @@ public class MarioCamera extends FixedCamera {
 		} else if (offsetY < -mArea.height/2) {
 			cameraY += (offsetY + (mArea.height/2))/f;
 		}
+		
+		// Also restrict the camera to the visible level, forced to the bottom left if the camera views the entire world.
 		
 		getCamera().position.set(cameraX, cameraY, 0);
 		getCamera().update();

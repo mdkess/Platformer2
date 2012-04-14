@@ -7,7 +7,6 @@ import java.util.Random;
 
 import ca.kess.games.Constants;
 import ca.kess.games.entities.GameEntity;
-import ca.kess.games.entities.GameEntityPool;
 import ca.kess.games.interfaces.IUpdateable;
 import ca.kess.games.screens.GameScreen;
 import ca.kess.games.timers.DeathFadeTimer;
@@ -32,13 +31,7 @@ public class WorldLevel implements IUpdateable, Disposable {
     private List<Timer> mTimers;
     private List<Timer> mFinishedTimers;
     private Vector2 mGravity;
-    
-    private GameEntityPool mGameEntityPool = new GameEntityPool(this);
-    
-    public GameEntityPool getGameEntityPool() {
-        return mGameEntityPool;
-    }
-    
+
     public WorldLevel(GameScreen game, String mapLocation) {
         mGameEntities = new LinkedList<GameEntity>();
         mEntitiesToAdd = new LinkedList<GameEntity>();
@@ -55,7 +48,7 @@ public class WorldLevel implements IUpdateable, Disposable {
             for(int x = 0; x < pixmap.getWidth(); ++x) {
                 int pixelColor = pixmap.getPixel(x, y) >>> 8; //signed shift
                 mTiles[x][pixmap.getHeight() - y - 1] = mTileSet.get(pixelColor);
-                assert mTiles[x][y] != null : "Unknown tile color " + pixelColor;
+                assert mTiles[x][y] != null : "Unknown tile color " + pixelColor + " at " + x + ", " + y;
             }
         }
         pixmap.dispose();
@@ -101,23 +94,22 @@ public class WorldLevel implements IUpdateable, Disposable {
         return mCollisions;
     }
     private Random mRandom = new Random();
+    //TODO: This should probably be cached in the game entity.
     public void killEntity(GameEntity entity) {
         TextureRegion[][] pixels = entity.getAnimation().getKeyFrame(0.0f, true).split(1, 1);
-        Vector2 pos = entity.getPosition();
         float deltaX = entity.getWidth() / pixels.length;
         float deltaY = entity.getHeight() / pixels[0].length;
         float particleMass = entity.getMass() / ((float)(pixels.length * pixels[0].length));
         for(int y=0; y < pixels.length; ++y) {
             for(int x = 0; x < pixels[y].length; ++x) {
                 Animation animation = new Animation(0.0f, pixels[pixels.length -1 - y][x]);
-                GameEntity particle = mGameEntityPool.getGameEntity().initialize(animation, this, 0.8f);
-                particle.setWidth(entity.getWidth() / pixels.length);
-                particle.setHeight(entity.getHeight() / pixels[x].length);
-                particle.getPosition().set(pos.x + deltaX * x, pos.y + deltaY * y);
-                particle.setVelocityX(entity.getVelocityX() + (mRandom.nextFloat() - 0.5f) * 10);
-                particle.setVelocityY(20);
-                particle.canBeInteractedWith(false);
-                particle.setMass(particleMass);
+                GameEntity particle = GameEntity.GetGameEntity().initialize(this,
+                        entity.getPositionX() + deltaX * x, entity.getPositionY() + deltaY * y,
+                        entity.getVelocityX() + (mRandom.nextFloat() - 0.5f) * 10, 20,
+                        entity.getWidth() / pixels.length, entity.getHeight() / pixels[x].length,
+                        particleMass, 0.8f,
+                        animation);
+                particle.setCanBeInteractedWith(false);
 
                 addEntity(particle);
                 addTimer(new DeathFadeTimer(particle, 3.0f));
