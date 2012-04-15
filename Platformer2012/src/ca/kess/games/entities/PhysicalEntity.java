@@ -1,10 +1,6 @@
 package ca.kess.games.entities;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 import ca.kess.games.Constants;
-import ca.kess.games.input.InputHandler;
 import ca.kess.games.interfaces.IRenderable;
 import ca.kess.games.interfaces.IUpdateable;
 import ca.kess.games.world.Tile;
@@ -27,7 +23,7 @@ import com.badlogic.gdx.utils.Disposable;
  * IMPORTANT: This class gets used a lot, and so it should never allocate or deallocate memory! Be really careful
  * about maintaining references.
  */
-public class PhysicalEntity extends GameEntity implements IRenderable, IUpdateable, Disposable {
+public abstract class PhysicalEntity extends GameEntity implements IRenderable, IUpdateable, Disposable {
     /**
      * ENUMERATIONS AND HELPER DATA STRUCTURES
      */
@@ -147,35 +143,21 @@ public class PhysicalEntity extends GameEntity implements IRenderable, IUpdateab
     // Trigger called when an entity touches a blocking tile on its left side
     // when they were not touching it previously.
     public void onTouchWallLeft(Vector2 impactVelocity) {
-        if(mInputHandler != null)
-            System.out.println("onTouchWallLeft: " + impactVelocity);
     }
     
     // Trigger called when an entity touches a blocking tile on its right side
     // when they were not touching it previously.
     public void onTouchWallRight(Vector2 impactVelocity) {
-        if(mInputHandler != null)
-            System.out.println("onTouchWallRight: " + impactVelocity);
     }
     
     // Trigger called when an entity touches a blocking tile on its bottom side
     // when they were not touching it previously.
     public void onTouchGround(Vector2 impactVelocity) {
-        if(mInputHandler != null) {
-            System.out.println("onTouchGround: " + impactVelocity);
-            if(impactVelocity.y < -50.0) {
-                kill();
-                getWorld().killEntity(this);
-                setVisible(false);
-            }
-        }
     }
     
     // Trigger called when an entity touches a blocking tile on its top side
     // when they were not touching it previously.
     public void onTouchRoof(Vector2 impactVelocity) {
-        if(mInputHandler != null)
-            System.out.println("onTouchRoof: " + impactVelocity);
     }
 
     // Whether the entity can be interacted with by other entities. Note that this is a one way rule - an
@@ -270,7 +252,7 @@ public class PhysicalEntity extends GameEntity implements IRenderable, IUpdateab
 
     
     //Initialize the entity as if it was new.
-    public PhysicalEntity initialize(
+    protected final PhysicalEntity initializeBase(
             WorldLevel worldLevel,
             float x, float y,
             float vx, float vy,
@@ -296,14 +278,8 @@ public class PhysicalEntity extends GameEntity implements IRenderable, IUpdateab
     }
 
     //Recycle the entity. This should dispose any objects that need to be disposed
-    public void recycle() {
-        Gdx.app.log(Constants.LOG, "PhysicalEntity::recycle");
-        mInitialized = false;
+    public abstract void recycle();
 
-        PhysicalEntity.RecycleEntity(this);
-    }
-    
-    
     //Open a door, if it's in front of the entity
     //TODO: This should really be an "Interact with tile" sort of function.
     public void openDoor() {
@@ -342,10 +318,6 @@ public class PhysicalEntity extends GameEntity implements IRenderable, IUpdateab
             mWorldLevel.killEntity(this);
             mWorldLevel.removeEntity(this);
         }
-    }
-
-    public InputHandler getInputHandler() {
-        return mInputHandler;
     }
 
     public boolean collidesWith(PhysicalEntity other) {
@@ -392,13 +364,8 @@ public class PhysicalEntity extends GameEntity implements IRenderable, IUpdateab
     @Override
     public final void update() {
         mAnimationTime += Constants.DELTA;
-        /*
-        while(mAnimationTime > mAnimation.animationDuration) {
-            mAnimationTime -= mAnimation.animationDuration;
-        }*/
-        resetForces();
-        
-        if(mInputHandler != null) { mInputHandler.update(); }
+
+        preUpdate();
         
         if(mAffectedByGravity) {
             Vector2 gravity = mWorldLevel.getGravity();
@@ -537,6 +504,22 @@ public class PhysicalEntity extends GameEntity implements IRenderable, IUpdateab
                 mVelocity.x = 0;
             }
         }
+        
+        postUpdate();
+        resetForces();
+    }
+    
+    /**
+     * This is called before the update logic is run (forces are reset)
+     */
+    public void preUpdate() {
+        
+    }
+    /**
+     * This is called after the update logic is run.
+     */
+    public void postUpdate() {
+        
     }
     
     //These methods are called when two entities collide.
@@ -554,11 +537,6 @@ public class PhysicalEntity extends GameEntity implements IRenderable, IUpdateab
         
     }
     
-    private InputHandler mInputHandler = null;
-    public void setInputHandler(InputHandler inputHandler) {
-        mInputHandler = inputHandler;
-    }
-    
     
     // Dipose the entity. This should clean up any references to libgdx objects
     // that need disposing. Note that this can be called on an initialized or
@@ -568,42 +546,5 @@ public class PhysicalEntity extends GameEntity implements IRenderable, IUpdateab
     public void dispose() {
     }
 
-    /**
-     * Some boilerplate code for the internal object pool.
-     */
-    // A list of all uninitialized game entities
-    private static Queue<PhysicalEntity> sAvailableGameEntities = new LinkedList<PhysicalEntity>();
 
-    // Pre-allocate some game entities
-    private static void CreateGameEntities(int num) {
-        Gdx.app.log(Constants.LOG, "PhysicalEntity::GetPhysicalEntity. Allocating " + num + " entities");
-        for(int i=0; i < num; ++i) {
-            sAvailableGameEntities.add(new PhysicalEntity());
-        }
-    }
-    
-    // Get an uninitialized game entity. It is the caller's responsibility to initialize it.
-    public static PhysicalEntity GetPhysicalEntity() {
-        Gdx.app.log(Constants.LOG, "PhysicalEntity::GetPhysicalEntity. There are " + sAvailableGameEntities.size() + " available.");
-        if(sAvailableGameEntities.size() == 0) {
-            Gdx.app.log(Constants.LOG, "No available game entities, creating new ones");
-            CreateGameEntities(100);
-        }
-        return sAvailableGameEntities.remove();
-    }
-    
-    // Put the entity back in the pool.
-    private static void RecycleEntity(PhysicalEntity entity) {
-        Gdx.app.log(Constants.LOG, "PhysicalEntity::RecycleEntity. There are now " + sAvailableGameEntities.size() + 1 + " entities in the pool.");
-        entity.getWorld().removeEntity(entity);
-        sAvailableGameEntities.add(entity);
-    }
-    
-    // Dispose the object pool for the game entity
-    public static void DisposeObjectPool() {
-        Gdx.app.log(Constants.LOG, "PhysicalEntity::DisposeObjectPool");
-        for(PhysicalEntity entity : sAvailableGameEntities) {
-            entity.dispose();
-        }
-    }
 }

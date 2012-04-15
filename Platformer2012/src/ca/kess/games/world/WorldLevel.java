@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 import ca.kess.games.Constants;
+import ca.kess.games.entities.ActorEntity;
 import ca.kess.games.entities.PhysicalEntity;
 import ca.kess.games.interfaces.IUpdateable;
 import ca.kess.games.screens.GameScreen;
@@ -103,7 +104,7 @@ public class WorldLevel implements IUpdateable, Disposable {
         for(int y=0; y < pixels.length; ++y) {
             for(int x = 0; x < pixels[y].length; ++x) {
                 Animation animation = new Animation(0.0f, pixels[pixels.length -1 - y][x]);
-                PhysicalEntity particle = PhysicalEntity.GetPhysicalEntity().initialize(this,
+                PhysicalEntity particle = ActorEntity.GetActorEntity().initialize(this,
                         entity.getPositionX() + deltaX * x, entity.getPositionY() + deltaY * y,
                         entity.getVelocityX() + (mRandom.nextFloat() - 0.5f) * 10, 20,
                         entity.getWidth() / pixels.length, entity.getHeight() / pixels[x].length,

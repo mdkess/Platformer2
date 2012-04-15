@@ -1,13 +1,14 @@
 package ca.kess.games.input;
 
 import ca.kess.games.Constants;
+import ca.kess.games.entities.ActorEntity;
 import ca.kess.games.entities.PhysicalEntity;
 
 import com.badlogic.gdx.Gdx;
 
 public class InputHandler {
-    private PhysicalEntity mEntity;
-    public InputHandler(PhysicalEntity entity) {
+    private ActorEntity mEntity;
+    public InputHandler(ActorEntity entity) {
         mEntity = entity;
     }
 

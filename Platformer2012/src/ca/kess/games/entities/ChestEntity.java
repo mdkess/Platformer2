@@ -33,7 +33,7 @@ public class ChestEntity extends PhysicalEntity {
             float mass, float bounciness,
             Animation openAnimation, Animation closedAnimation, 
             PhysicalEntity contents) { 
-        super.initialize(worldLevel,
+        initializeBase(worldLevel,
                 x, y,
                 vx, vy,
                 width, height,
@@ -108,4 +108,5 @@ public class ChestEntity extends PhysicalEntity {
             entity.dispose();
         }
     }
+
 }
