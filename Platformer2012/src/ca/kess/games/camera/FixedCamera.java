@@ -1,7 +1,7 @@
 package ca.kess.games.camera;
 
 import ca.kess.games.Constants;
-import ca.kess.games.entities.GameEntity;
+import ca.kess.games.entities.PhysicalEntity;
 import ca.kess.games.world.WorldLevel;
 
 import com.badlogic.gdx.Gdx;
@@ -10,14 +10,14 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 
 public class FixedCamera extends GameCamera {
-    private GameEntity mGameEntity;
+    private PhysicalEntity mGameEntity;
 
-    public FixedCamera(OrthographicCamera camera, GameEntity entity) {
+    public FixedCamera(OrthographicCamera camera, PhysicalEntity entity) {
         super(camera);
         mGameEntity = entity;
     }
 
-    public final GameEntity getTarget() {
+    public final PhysicalEntity getTarget() {
         return mGameEntity;
     }
 

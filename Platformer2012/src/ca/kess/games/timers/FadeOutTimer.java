@@ -1,10 +1,10 @@
 package ca.kess.games.timers;
 
-import ca.kess.games.entities.GameEntity;
+import ca.kess.games.entities.PhysicalEntity;
 
 public class FadeOutTimer extends Timer {
 
-    public FadeOutTimer(GameEntity entity, float duration) {
+    public FadeOutTimer(PhysicalEntity entity, float duration) {
         super(entity, duration);
         // TODO Auto-generated constructor stub
     }

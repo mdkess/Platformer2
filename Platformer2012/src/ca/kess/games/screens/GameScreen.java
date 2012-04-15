@@ -6,7 +6,7 @@ import ca.kess.games.Constants;
 import ca.kess.games.camera.GameCamera;
 import ca.kess.games.camera.MarioCamera;
 import ca.kess.games.entities.ChestEntity;
-import ca.kess.games.entities.GameEntity;
+import ca.kess.games.entities.PhysicalEntity;
 import ca.kess.games.graphics.GraphicsCache;
 import ca.kess.games.input.InputHandler;
 import ca.kess.games.ui.GameButton;
@@ -30,7 +30,7 @@ public class GameScreen extends PlatformerScreen {
     private SpriteBatch mDebugSpriteBatch;
     private GameCamera mCamera;
     private WorldLevel mWorldLevel;
-    private final GameEntity mHero;
+    private final PhysicalEntity mHero;
     private Random mRandom = new Random();
     private final Stage mStage;
     
@@ -110,7 +110,7 @@ public class GameScreen extends PlatformerScreen {
         
         mWorldLevel = new WorldLevel(this, "data/map.png");
         
-        mHero = GameEntity.GetGameEntity().initialize(mWorldLevel,
+        mHero = PhysicalEntity.GetPhysicalEntity().initialize(mWorldLevel,
                 2, 2,
                 0, 0,
                 1, 1,
@@ -123,24 +123,22 @@ public class GameScreen extends PlatformerScreen {
         
         mCamera = new MarioCamera(new OrthographicCamera(Gdx.graphics.getWidth()/(Constants.TILE_SIZE*Constants.ZOOM_FACTOR), Gdx.graphics.getHeight()/(Constants.TILE_SIZE*Constants.ZOOM_FACTOR)), mHero
             , new Rectangle(300, 200, Gdx.graphics.getWidth() - 600, Gdx.graphics.getHeight() - 400));
-        /*
+
         for(int i = 0; i < 128; i += 16) {
-            GameEntity obj = mWorldLevel.getGameEntityPool().getGameEntity().initialize(
-                    new Animation(0.5f, GraphicsCache.getObject(mRandom.nextInt(14), mRandom.nextInt(14))), mWorldLevel, 0.5f);
-                    //new Animation(0.1f,
-                    //        GraphicsCache.getObject(0, 7),
-                    //        GraphicsCache.getObject(1, 7),
-                    //        GraphicsCache.getObject(2, 7),
-                    //        GraphicsCache.getObject(1, 7))
-                    //    , mWorldLevel, 1f);
+            PhysicalEntity obj = PhysicalEntity.GetPhysicalEntity().initialize(mWorldLevel, 0, 0, 0, 0, 1, 1, 1, 0.5f,
+                    new Animation(0.1f,
+                            GraphicsCache.getObject(0, 7),
+                            GraphicsCache.getObject(1, 7),
+                            GraphicsCache.getObject(2, 7),
+                            GraphicsCache.getObject(1, 7)));
             
             //TODO: Add chest to entity pool
-            ChestEntity chest = mWorldLevel.getGameEntityPool().getChestEntity().initialize(
+            ChestEntity chest = ChestEntity.GetChestEntity().initialize(mWorldLevel,
+                    i, 100, 0, 0, 1, 1, 1, 0.5f, 
                     new Animation(0.0f, GraphicsCache.getObject(1, 0)),
-                    new Animation(0.0f, GraphicsCache.getObject(2, 0)), mWorldLevel, 0.5f, obj);
-            chest.getPosition().set(i, 100);
+                    new Animation(0.0f, GraphicsCache.getObject(2, 0)), obj);
             mWorldLevel.addEntity(chest);
-        }*/
+        }
         
         TextureRegion flip = new TextureRegion(GraphicsCache.getInterface(5, 2));
         flip.flip(true, false);
@@ -285,10 +283,10 @@ public class GameScreen extends PlatformerScreen {
         mAccumulator += delta;
         //for(Gdx.input.n)
         int iters = 0;
-        while(mAccumulator >= Constants.PHYSICS_DELTA) {
+        while(mAccumulator >= Constants.DELTA) {
             ++iters;
-            mWorldLevel.update(Constants.PHYSICS_DELTA);
-            mAccumulator -= Constants.PHYSICS_DELTA;
+            mWorldLevel.update();
+            mAccumulator -= Constants.DELTA;
             if(iters > Constants.SKIP_FRAMES) {
                 Gdx.app.error(Constants.LOG, "Skipped after " + iters + " updates. Delta: " + delta + " Accumulator: " + mAccumulator);
                 mAccumulator = 0;

@@ -38,12 +38,12 @@ public class TileSet implements IUpdateable {
 	}
 
 	@Override
-	public void update(float delta) {
+	public void update() {
 	    for(Tile tile : mTileCache.values()) {
-	        tile.update(delta);
+	        tile.update();
 	    }
 	    for(Tile tile : mInstanceTiles) {
-	        tile.update(delta);
+	        tile.update();
 	    }
 	}
     private Animation mDoorClosedAnimation = new Animation(1f, GraphicsCache.getEnvironment(0,  13));

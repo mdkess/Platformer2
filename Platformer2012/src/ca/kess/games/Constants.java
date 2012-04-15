@@ -28,7 +28,7 @@ public class Constants {
     /**
      * How far the camera is zoomed in. ZOOM_FACTOR * TILE_SIZE determines the relative size of a pixel.
      */
-    public static final int ZOOM_FACTOR = 4;
+    public static final int ZOOM_FACTOR = 2;
     
     /**
      * The size of a tile, in pixels.
@@ -72,7 +72,7 @@ public class Constants {
     /**
      * The timestep for updating physics.
      */
-    public static final float PHYSICS_DELTA = 1.0f/60.0f;
+    public static final float DELTA = 1.0f/60.0f;
     
     /**
      * How many frames we should skip on. In the update loop, the world physics is updated at a constant rate of 

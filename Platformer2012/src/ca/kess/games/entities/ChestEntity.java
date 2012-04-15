@@ -10,7 +10,7 @@ import ca.kess.games.world.WorldLevel;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
 
-public class ChestEntity extends GameEntity {
+public class ChestEntity extends PhysicalEntity {
     public enum ChestState {
         LOCKED,
         OPEN,
@@ -21,18 +21,18 @@ public class ChestEntity extends GameEntity {
     Animation mClosedAnimation;
     ChestState mState;
 
-    GameEntity mContents;
+    PhysicalEntity mContents;
     private ChestEntity() {
         
     }
-    
+
     public ChestEntity initialize(WorldLevel worldLevel,
             float x, float y,
             float vx, float vy,
             float width, float height,
             float mass, float bounciness,
             Animation openAnimation, Animation closedAnimation, 
-            GameEntity contents) { 
+            PhysicalEntity contents) { 
         super.initialize(worldLevel,
                 x, y,
                 vx, vy,
@@ -49,7 +49,7 @@ public class ChestEntity extends GameEntity {
     }
 
     @Override
-    public void onInteraction(GameEntity other) {
+    public void onInteraction(PhysicalEntity other) {
         if(mState == ChestState.CLOSED) {
             mState = ChestState.OPEN;
             setVelocityY(15);
@@ -61,6 +61,13 @@ public class ChestEntity extends GameEntity {
         }
     }
     
+    @Override
+    public void recycle() {
+        Gdx.app.log(Constants.LOG, "GameEntity::recycle");
+        setInitialized(false);
+
+        ChestEntity.RecycleEntity(this);
+    }
     
     
     /**
@@ -88,10 +95,9 @@ public class ChestEntity extends GameEntity {
     }
     
     // Put the entity back in the pool.
-    public static void RecycleEntity(ChestEntity entity) {
+    private static void RecycleEntity(ChestEntity entity) {
         Gdx.app.log(Constants.LOG, "ChestEntity::RecycleEntity");
         entity.getWorld().removeEntity(entity);
-        entity.recycle(); //marks the entity as initialized.
         sAvailableEntities.add(entity);
     }
     

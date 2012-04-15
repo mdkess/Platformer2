@@ -1,6 +1,6 @@
 package ca.kess.games.util;
 
-import ca.kess.games.entities.GameEntity;
+import ca.kess.games.entities.PhysicalEntity;
 
 import com.badlogic.gdx.math.Rectangle;
 
@@ -16,7 +16,7 @@ public class QuadTree <Key, Value> {
         Node SE;
     }
     
-    public void insert(GameEntity entity) {
+    public void insert(PhysicalEntity entity) {
         
     }
 }

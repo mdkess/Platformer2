@@ -1,15 +1,15 @@
 package ca.kess.games.timers;
 
-import ca.kess.games.entities.GameEntity;
+import ca.kess.games.entities.PhysicalEntity;
 
 public class DeathFadeTimer extends FadeOutTimer {
-    public DeathFadeTimer(GameEntity entity, float duration) {
+    public DeathFadeTimer(PhysicalEntity entity, float duration) {
         super(entity, duration);
     }
 
     @Override
     public void onFinish() {
-        GameEntity.RecycleEntity(getEntity());
+        getEntity().recycle();
         super.onFinish();
     }
 

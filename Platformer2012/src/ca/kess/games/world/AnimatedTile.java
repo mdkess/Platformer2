@@ -1,5 +1,7 @@
 package ca.kess.games.world;
 
+import ca.kess.games.Constants;
+
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -21,7 +23,7 @@ public class AnimatedTile extends Tile {
     }
     
     @Override
-    public void update(float delta) {
-        mElapsedTime += delta;
+    public void update() {
+        mElapsedTime += Constants.DELTA;
     }
 }

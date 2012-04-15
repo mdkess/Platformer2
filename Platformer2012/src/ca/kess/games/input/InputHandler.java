@@ -1,13 +1,13 @@
 package ca.kess.games.input;
 
 import ca.kess.games.Constants;
-import ca.kess.games.entities.GameEntity;
+import ca.kess.games.entities.PhysicalEntity;
 
 import com.badlogic.gdx.Gdx;
 
 public class InputHandler {
-    private GameEntity mEntity;
-    public InputHandler(GameEntity entity) {
+    private PhysicalEntity mEntity;
+    public InputHandler(PhysicalEntity entity) {
         mEntity = entity;
     }
 
@@ -125,7 +125,7 @@ public class InputHandler {
             mInteractPressed = false;
             if(!hasInteracted) {
                 hasInteracted = true;
-                for(GameEntity entity : mEntity.getWorld().getCollisions(mEntity, true)) {
+                for(PhysicalEntity entity : mEntity.getWorld().getCollisions(mEntity, true)) {
                     entity.onInteraction(mEntity);
                 }
                 mEntity.openDoor();
@@ -143,9 +143,9 @@ public class InputHandler {
         }
         
         if(mLeftPressed) {
-            mEntity.setDirection(GameEntity.Direction.LEFT);
+            mEntity.setDirection(PhysicalEntity.Direction.LEFT);
         } else if(mRightPressed) {
-            mEntity.setDirection(GameEntity.Direction.RIGHT);
+            mEntity.setDirection(PhysicalEntity.Direction.RIGHT);
         }
         
         if(mSuicidePressed) {

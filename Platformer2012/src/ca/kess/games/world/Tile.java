@@ -1,7 +1,7 @@
 package ca.kess.games.world;
 
 import ca.kess.games.Constants;
-import ca.kess.games.entities.GameEntity;
+import ca.kess.games.entities.PhysicalEntity;
 import ca.kess.games.interfaces.IUpdateable;
 
 import com.badlogic.gdx.Gdx;
@@ -24,10 +24,10 @@ public abstract class Tile implements IUpdateable {
         mBlocksMovement = blocksMovement;
     }
     
-    public void onInteraction(GameEntity entity) {
+    public void onInteraction(PhysicalEntity entity) {
         Gdx.app.log(Constants.LOG, "Tile::onInteraction");
     }
     
     @Override
-    public void update(float delta) { }
+    public void update() { }
 }

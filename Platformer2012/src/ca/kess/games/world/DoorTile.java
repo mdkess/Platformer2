@@ -1,6 +1,6 @@
 package ca.kess.games.world;
 
-import ca.kess.games.entities.GameEntity;
+import ca.kess.games.entities.PhysicalEntity;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
 
@@ -35,7 +35,7 @@ public class DoorTile extends AnimatedTile {
     }
     
     @Override
-    public void onInteraction(GameEntity entity) {
+    public void onInteraction(PhysicalEntity entity) {
         toggleState();
     }
     

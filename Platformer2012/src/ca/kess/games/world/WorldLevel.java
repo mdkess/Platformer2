@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 import ca.kess.games.Constants;
-import ca.kess.games.entities.GameEntity;
+import ca.kess.games.entities.PhysicalEntity;
 import ca.kess.games.interfaces.IUpdateable;
 import ca.kess.games.screens.GameScreen;
 import ca.kess.games.timers.DeathFadeTimer;
@@ -24,18 +24,18 @@ public class WorldLevel implements IUpdateable, Disposable {
 	private TileSet mTileSet;
     private Tile[][] mTiles;
     private GameScreen mGame;
-    private List<GameEntity> mGameEntities;
-    private List<GameEntity> mEntitiesToAdd;
-    private List<GameEntity> mEntitiesToRemove;
+    private List<PhysicalEntity> mGameEntities;
+    private List<PhysicalEntity> mEntitiesToAdd;
+    private List<PhysicalEntity> mEntitiesToRemove;
     
     private List<Timer> mTimers;
     private List<Timer> mFinishedTimers;
     private Vector2 mGravity;
 
     public WorldLevel(GameScreen game, String mapLocation) {
-        mGameEntities = new LinkedList<GameEntity>();
-        mEntitiesToAdd = new LinkedList<GameEntity>();
-        mEntitiesToRemove = new LinkedList<GameEntity>();
+        mGameEntities = new LinkedList<PhysicalEntity>();
+        mEntitiesToAdd = new LinkedList<PhysicalEntity>();
+        mEntitiesToRemove = new LinkedList<PhysicalEntity>();
         mTimers = new LinkedList<Timer>();
         mFinishedTimers = new LinkedList<Timer>();
 
@@ -53,15 +53,15 @@ public class WorldLevel implements IUpdateable, Disposable {
         }
         pixmap.dispose();
         mGravity = new Vector2(0, -Constants.GRAVITY);
-        mCollisions = new ArrayList<GameEntity>(Constants.MAX_COLLISIONS); 
+        mCollisions = new ArrayList<PhysicalEntity>(Constants.MAX_COLLISIONS); 
     }
     
     public Vector2 getGravity() { return mGravity; }
     
-    public void addEntity(GameEntity entity) {
+    public void addEntity(PhysicalEntity entity) {
         mEntitiesToAdd.add(entity);
     }
-    public void removeEntity(GameEntity entity) {
+    public void removeEntity(PhysicalEntity entity) {
         mEntitiesToRemove.add(entity);
     }
     
@@ -72,17 +72,17 @@ public class WorldLevel implements IUpdateable, Disposable {
         mFinishedTimers.add(timer);
     }
     
-    private List<GameEntity> mCollisions;
+    private List<PhysicalEntity> mCollisions;
     /**
      * Get up to Constants.MAX_COLLISIONS.
      * The list is reused per call, so be sure.
      * @param e
      * @return
      */
-    public List<GameEntity> getCollisions(GameEntity e, boolean forInteraction) {
+    public List<PhysicalEntity> getCollisions(PhysicalEntity e, boolean forInteraction) {
         mCollisions.clear();
         
-        for(GameEntity entity : mGameEntities) {
+        for(PhysicalEntity entity : mGameEntities) {
             if(mCollisions.size() == Constants.MAX_COLLISIONS) break;
             if(entity != e) {
                 if((!forInteraction || entity.canBeInteractedWith()) && e.collidesWith(entity)) {
@@ -95,7 +95,7 @@ public class WorldLevel implements IUpdateable, Disposable {
     }
     private Random mRandom = new Random();
     //TODO: This should probably be cached in the game entity.
-    public void killEntity(GameEntity entity) {
+    public void killEntity(PhysicalEntity entity) {
         TextureRegion[][] pixels = entity.getAnimation().getKeyFrame(0.0f, true).split(1, 1);
         float deltaX = entity.getWidth() / pixels.length;
         float deltaY = entity.getHeight() / pixels[0].length;
@@ -103,7 +103,7 @@ public class WorldLevel implements IUpdateable, Disposable {
         for(int y=0; y < pixels.length; ++y) {
             for(int x = 0; x < pixels[y].length; ++x) {
                 Animation animation = new Animation(0.0f, pixels[pixels.length -1 - y][x]);
-                GameEntity particle = GameEntity.GetGameEntity().initialize(this,
+                PhysicalEntity particle = PhysicalEntity.GetPhysicalEntity().initialize(this,
                         entity.getPositionX() + deltaX * x, entity.getPositionY() + deltaY * y,
                         entity.getVelocityX() + (mRandom.nextFloat() - 0.5f) * 10, 20,
                         entity.getWidth() / pixels.length, entity.getHeight() / pixels[x].length,
@@ -127,33 +127,33 @@ public class WorldLevel implements IUpdateable, Disposable {
                 mTiles[x][y].render(b, x, y);
             }
         }
-        for(GameEntity entity : mGameEntities) {
+        for(PhysicalEntity entity : mGameEntities) {
             entity.render(b);
         }
     }
 
     @Override
-    public void update(float delta) {
+    public void update() {
         for(Timer timer : mFinishedTimers) {
             mTimers.remove(timer);
         }
         for(Timer timer : mTimers) {
-            timer.update(delta);
+            timer.update();
         }
         mFinishedTimers.clear();
         
-        for(GameEntity entity : mEntitiesToAdd) {
+        for(PhysicalEntity entity : mEntitiesToAdd) {
             mGameEntities.add(entity);
         }
-        for(GameEntity entity : mEntitiesToRemove) {
+        for(PhysicalEntity entity : mEntitiesToRemove) {
             mGameEntities.remove(entity);
         }
         mEntitiesToAdd.clear();
         mEntitiesToRemove.clear();
 
-        mTileSet.update(delta);
-        for(GameEntity entity : mGameEntities) {
-            entity.update(delta);
+        mTileSet.update();
+        for(PhysicalEntity entity : mGameEntities) {
+            entity.update();
         }
     }
     
@@ -284,7 +284,7 @@ public class WorldLevel implements IUpdateable, Disposable {
     
 	@Override
 	public void dispose() {
-		for(GameEntity entity : mGameEntities) {
+		for(PhysicalEntity entity : mGameEntities) {
 			entity.dispose();
 		}
 	}

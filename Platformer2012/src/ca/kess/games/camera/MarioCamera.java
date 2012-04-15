@@ -1,7 +1,7 @@
 package ca.kess.games.camera;
 
 import ca.kess.games.Constants;
-import ca.kess.games.entities.GameEntity;
+import ca.kess.games.entities.PhysicalEntity;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
@@ -13,7 +13,7 @@ public class MarioCamera extends FixedCamera {
 	 * The area of the camera, in screen space
 	 */
 	private final Rectangle mArea;
-	public MarioCamera(OrthographicCamera camera, GameEntity entity, Rectangle area) {
+	public MarioCamera(OrthographicCamera camera, PhysicalEntity entity, Rectangle area) {
 		super(camera, entity);
 		mArea = area;
 	}
