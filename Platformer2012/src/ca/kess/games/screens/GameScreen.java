@@ -348,6 +348,8 @@ public class GameScreen extends PlatformerScreen {
         mFont.draw(mDebugSpriteBatch, "Used mem: " + String.format("%.5g%n%%", ((float)usedMem / (float)rt.totalMemory())*100.0), 10, 280);
         mFont.draw(mDebugSpriteBatch, "Speed: " + mHero.getVelocityX(), 10, 300);
         mFont.draw(mDebugSpriteBatch, "On Ground: " + mHero.isOnGround(), 10, 320);
+        mFont.draw(mDebugSpriteBatch, "On Wall(L): " + mHero.isOnWallLeft(), 10, 340);
+        mFont.draw(mDebugSpriteBatch, "On Wall(R): " + mHero.isOnWallRight(), 10, 360);
         mDebugSpriteBatch.end();
     }
 

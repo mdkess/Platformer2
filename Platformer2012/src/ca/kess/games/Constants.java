@@ -47,7 +47,12 @@ public class Constants {
      * is more fleshed out.
      */
     public static final float DUMMY_FRICTION = 0.8f;
-    
+
+    /**
+     * The friction on a wall. This will be replaced with an actual calculation
+     * eventually.
+     */
+    public static final float WALL_FRICTION = 1.5f;
     /**
      * The maximum force that the a game entity can have affecting it in the X direction. This should be a per entity property.
      */
@@ -82,4 +87,5 @@ public class Constants {
     public static final int SKIP_FRAMES = 3;
     
     public static final String LOG = "mdkess-platformer";
+
 }

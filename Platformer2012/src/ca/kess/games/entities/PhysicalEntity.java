@@ -341,7 +341,25 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
         //x-axis intersects
         return(ax1 < bx2 && ax2 >= bx1 && ay1 < by2 && ay2 >= by1);
     }
-
+    
+    
+    protected void calculateFriction(final Vector2 frictionOut, final Vector2 gravity) {
+        float u_k = mWorldLevel.getFriction(mPosition, mAABB);
+        if(mIsOnGround) {
+            float forceFriction = -u_k * gravity.y * mMass;
+            if(forceFriction < 0) {
+                Gdx.app.error(Constants.LOG, "Error - friction " + forceFriction + " should not be negative");
+                forceFriction = 0;
+            }
+            frictionOut.x = forceFriction;
+        } else {
+            //We're airborne!
+            if(mApplyDrag) {
+                // Now here, force of friction becomes drag, which is proportional to the square of the velocity.
+                frictionOut.x = Constants.DRAG * mVelocity.x * mVelocity.x;
+            }
+        }
+    }
 
     /**
      * This is the main update function, it is called once per frame.
@@ -359,8 +377,10 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
      * Most state variables within the class are in flux within the update() function,
      * so be careful bout what you call!
      */
+    //TODO: Maybe make these static?
     Vector2 update_Acceleration = new Vector2();  //LOCAL VARIABLE: Only to be used in update()!
     Vector2 update_Gravity = new Vector2();       //LOCAL VARIABLE: Only to be used in update()!
+    Vector2 update_Friction = new Vector2();      //LOCAL VARIABLE: Only to be used in update()!
     @Override
     public final void update() {
         mAnimationTime += Constants.DELTA;
@@ -374,21 +394,9 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
             update_Gravity.set(0,0);
         }
         applyForce(update_Gravity.x * mMass, update_Gravity.y * mMass);
-        
-        //Now apply friction
-        float forceFriction = 0;
-        if(mIsOnGround) {
-            float u_k = mWorldLevel.getFriction(mPosition, mAABB);
-            forceFriction = -u_k * update_Gravity.y * mMass;
-            if(forceFriction < 0) {
-                Gdx.app.error(Constants.LOG, "Error - friction " + forceFriction + " should not be negative");
-                forceFriction = 0;
-            }
-        } else if(mApplyDrag) {
-            //Now here, force of friction becomes drag, which is proportional to the square of the velocity.
-            forceFriction = Constants.DRAG * mVelocity.x * mVelocity.x;
-        }
-        
+        update_Friction.set(0,0);
+        calculateFriction(update_Friction, update_Gravity);
+
         //F = m * a => a = F / m
         update_Acceleration.set(mAppliedForces.x / mMass, mAppliedForces.y / mMass);
         
@@ -396,17 +404,30 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
         mVelocity.y += update_Acceleration.y * Constants.DELTA;
         
         //Now we have the velocity without friction. Apply friction.
-        float frictionAcceleration = forceFriction * mMass;
-        float frictionDeltaVelocity = frictionAcceleration * Constants.DELTA;
+        float frictionAccelerationX = update_Friction.x * mMass;
+        float frictionDeltaVelocityX = frictionAccelerationX * Constants.DELTA;
         if(mVelocity.x > 0) {
-            mVelocity.x -= frictionDeltaVelocity;
+            mVelocity.x -= frictionDeltaVelocityX;
             if(mVelocity.x < 0) {
                 mVelocity.x = 0;
             }
         } else {
-            mVelocity.x += frictionDeltaVelocity;
+            mVelocity.x += frictionDeltaVelocityX;
             if(mVelocity.x > 0) {
                 mVelocity.x = 0;
+            }
+        }
+        float frictionAccelerationY = update_Friction.y * mMass;
+        float frictionDeltaVelocityY = frictionAccelerationY * Constants.DELTA;
+        if(mVelocity.y > 0) {
+            mVelocity.y -= frictionDeltaVelocityY;
+            if(mVelocity.y < 0) {
+                mVelocity.y = 0;
+            }
+        } else {
+            mVelocity.y += frictionDeltaVelocityY;
+            if(mVelocity.y > 0) {
+                mVelocity.y = 0;
             }
         }
         
@@ -426,41 +447,17 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
         } else {
             deltaX = mWorldLevel.getPenetrationDepthX(mPosition, deltaXprev, mAABB);
             mPosition.x += deltaX;
-            
-            //mIsOnWallLeft = mIsOnWallRight = false;
-            
+
             if(deltaX != deltaXprev) {
-                if(deltaXprev < 0) {
-                    if(!mIsOnWallLeft) {
-                        onTouchWallLeft(mVelocity);
-                    }
-                    mIsOnWallLeft = true;
-                    mIsOnWallRight = false;
-                    
-                } else {
-                    if(!mIsOnWallRight) {
-                        onTouchWallRight(mVelocity);
-                    }
-                    mIsOnWallRight = true;
-                    mIsOnWallLeft = false;
-                    
-                }
                 mVelocity.x = 0;
-            } else if (deltaXprev != 0) {
-                mIsOnWallLeft = mIsOnWallRight = false;
             }
-            
-            
-            
+
             deltaY = mWorldLevel.getPenetrationDepthY(mPosition, deltaYprev, mAABB);
             mPosition.y += deltaY;
             //TODO: This can probably be simplified
-            //mIsOnGround = mIsOnRoof = false;
+            //TODO: Fix triggers here!
             if(deltaY != deltaYprev) {
                 if(deltaY < 0) {
-                    mIsOnGround = true;
-                    onTouchGround(mVelocity);
-                    //System.out.println("On the ground - hit at " + mVelocity.y + " tiles/second");
                     //Apply bounciness
                     float deltaDelta = deltaY - deltaYprev;  //how much we overshot by
                     mVelocity.y = -mVelocity.y * mBounciness;
@@ -470,8 +467,6 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
                         mPosition.y += newDeltaY;
                         //And stop. If the object is between two objects, we don't want to loop forever.
                         if(newDeltaY != deltaDelta) {
-                            //mIsOnRoof = true;
-                            //onTouchRoof(mVelocity);
                             mVelocity.y = 0;
                         }
                     } else {
@@ -479,19 +474,15 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
                     }
                     //TODO: Update the position again
                 } else if (deltaY == 0) {
-                    mIsOnGround = true;
                     mVelocity.y = 0;
                 } else {
-                    //mIsOnRoof = true;
-                    //onTouchRoof(mVelocity);
                     mVelocity.y = 0;
                 }
-            } else {
-                //System.out.println("Not on the ground");
-                mIsOnGround = false;
             }
         }
 
+        updateFlags();
+        
         //Cap velocity.
         if(mVelocity.x > mMaximumSpeed.x) {
             mVelocity.x = mMaximumSpeed.x;
@@ -507,6 +498,18 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
         
         postUpdate();
         resetForces();
+    }
+    
+    // Update the contact flags.
+    // TODO: This results in another physics computation, so we may want
+    // to be smart about this (ie. only compute if we care about it). That said,
+    // some of the flags are important to the physics.
+    private void updateFlags() {
+        mIsOnGround    = mWorldLevel.getPenetrationDepthY(mPosition, -0.1f, mAABB) == 0;
+        mIsOnRoof      = mWorldLevel.getPenetrationDepthY(mPosition,  0.1f, mAABB) == 0;
+        mIsOnWallLeft  = mWorldLevel.getPenetrationDepthX(mPosition, -0.1f, mAABB) == 0;
+        mIsOnWallRight = mWorldLevel.getPenetrationDepthX(mPosition,  0.1f, mAABB) == 0;
+        
     }
     
     /**

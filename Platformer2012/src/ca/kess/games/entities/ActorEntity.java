@@ -55,9 +55,21 @@ public class ActorEntity extends PhysicalEntity {
     
     @Override
     public void onTouchRoof(Vector2 impactVelocity) {
-        Gdx.app.log(Constants.LOG, "ActorEntity::onRoof: " + impactVelocity);
+        Gdx.app.log(Constants.LOG, "ActorEntity::onTouchRoof: " + impactVelocity);
     }
     
+    @Override
+    protected void calculateFriction(final Vector2 frictionOut, final Vector2 gravity) {
+        //If we're on a wall, and we're falling down, apply an upward
+        //force on the entity. This represents the character grabbing
+        //the wall on the way down.
+        if((isOnWallLeft() || isOnWallRight()) && getVelocityY() < 0) {
+            //Take the force as gravity, only against the wall.
+            frictionOut.y = -Constants.WALL_FRICTION * gravity.y * getMass();
+        }
+        super.calculateFriction(frictionOut, gravity);
+    }
+
     
     /**
      * Some boilerplate code for the internal object pool.
