@@ -35,8 +35,9 @@ public class DoorTile extends AnimatedTile {
     }
     
     @Override
-    public void onInteraction(PhysicalEntity entity) {
+    public boolean onInteraction(PhysicalEntity entity) {
         toggleState();
+        return true;
     }
     
     public void close(){

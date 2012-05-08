@@ -24,8 +24,9 @@ public abstract class Tile implements IUpdateable {
         mBlocksMovement = blocksMovement;
     }
     
-    public void onInteraction(PhysicalEntity entity) {
+    public boolean onInteraction(PhysicalEntity entity) {
         Gdx.app.log(Constants.LOG, "Tile::onInteraction");
+        return false;
     }
     
     @Override

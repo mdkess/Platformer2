@@ -6,15 +6,23 @@ import ca.kess.games.entities.PhysicalEntity;
 
 import com.badlogic.gdx.Gdx;
 
-public class InputHandler {
+public class KeyboardInputHandler extends EntityController {
     private ActorEntity mEntity;
-    public InputHandler(ActorEntity entity) {
+    public KeyboardInputHandler(ActorEntity entity) {
         mEntity = entity;
     }
+    
+    //keep track of the mini state machien for how the player can jump
+    private enum JumpState {
+        CAN_JUMP,           //Entity hasn't jumped yet
+        JUMPED,             //Entity has jumped
+        CAN_DOUBLE_JUMP,    //Entity can double jump
+        DOUBLE_JUMPED,      //Entity has jumped and double jumped
+    }
 
+    private JumpState mJumpState = JumpState.CAN_JUMP;
+    
     private boolean hasInteracted = false;
-    private boolean hasDoubleJumped = false;
-    private boolean hasWallJumped = false;
     private int mJumpFrames = 0;
     
     private boolean mLeftPressed = false;
@@ -51,6 +59,7 @@ public class InputHandler {
         mSuicidePressed = pressed;
     }
     
+    @Override
     public void update() {
         if(mResetPressed && !mEntity.isAlive()) {
             mEntity.resurrect();
@@ -69,8 +78,7 @@ public class InputHandler {
         float forceY = 0;
         
         if(mEntity.isOnGround()) {
-            hasDoubleJumped = false;
-            hasWallJumped = false;
+            mJumpState = JumpState.CAN_JUMP;
             mJumpFrames = 0;
         }
         
@@ -82,24 +90,33 @@ public class InputHandler {
         }
 
         
-        if(mJumpPressed) {
-            if(mEntity.isOnGround()) {
+        if(mJumpPressed) { 
+            if(mEntity.isOnGround() && mJumpState == JumpState.CAN_JUMP) {
                 forceY += Constants.HERO_JUMP_FORCE;
                 mJumpFrames = Constants.HERO_JUMP_THRUST_FRAMES;
+                mJumpState = JumpState.JUMPED;
+            } else if(mJumpState == JumpState.CAN_DOUBLE_JUMP) {
+                Gdx.app.log(Constants.LOG, "Double jumped!");
+                mJumpState = JumpState.DOUBLE_JUMPED;
+                mJumpFrames = Constants.HERO_JUMP_THRUST_FRAMES;
+                forceY += Constants.HERO_JUMP_FORCE;
+                mEntity.setVelocityY(0);
             } else if(mJumpFrames > 0) {
                 --mJumpFrames;
                 forceY += Constants.HERO_JUMP_FORCE;
-            } else {
-                /*
+                
+            }
+            /*else {
+                
                 if(mEntity.isOnWallLeft()) {
                     vy = Constants.HERO_JUMP_FORCE;
                     vx = Constants.HERO_JUMP_FORCE;
                 } else if(mEntity.isOnWallRight()) {
                     vx = Constants.HERO_JUMP_FORCE;
                     vx = Constants.HERO_JUMP_FORCE;
-                }*/
+                }
             }
-            
+            */
             /*
             } else if(!hasDoubleJumped) {
                 //hasDoubleJumped = true;
@@ -119,17 +136,24 @@ public class InputHandler {
             }*/
         } else {
             mJumpFrames = 0; // use them or lose them
+            if(mJumpState == JumpState.JUMPED) {
+                mJumpState = JumpState.CAN_DOUBLE_JUMP;
+            }
         }
 
         
         if(mInteractPressed) {
             mInteractPressed = false;
             if(!hasInteracted) {
-                hasInteracted = true;
                 for(PhysicalEntity entity : mEntity.getWorld().getCollisions(mEntity, true)) {
-                    entity.onInteraction(mEntity);
+                    hasInteracted = hasInteracted || entity.onInteraction(mEntity);
                 }
-                mEntity.openDoor();
+                if(!hasInteracted) {
+                    hasInteracted = mEntity.openDoor();
+                }
+                if(!hasInteracted) {
+                    mEntity.attack();
+                }
             }
         } else {
             hasInteracted = false;

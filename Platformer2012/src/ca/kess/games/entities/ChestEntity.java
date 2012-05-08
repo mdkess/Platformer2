@@ -49,7 +49,7 @@ public class ChestEntity extends PhysicalEntity {
     }
 
     @Override
-    public void onInteraction(PhysicalEntity other) {
+    public boolean onInteraction(PhysicalEntity other) {
         if(mState == ChestState.CLOSED) {
             mState = ChestState.OPEN;
             setVelocityY(15);
@@ -58,7 +58,14 @@ public class ChestEntity extends PhysicalEntity {
             getWorld().addEntity(mContents);
             setAnimation(mOpenAnimation);
             getWorld().addTimer(new DeathFadeTimer(this, 1.0f));
+            return true;
         }
+        return false;
+    }
+    
+    @Override
+    public boolean canBeDamaged() {
+        return false;
     }
     
     @Override

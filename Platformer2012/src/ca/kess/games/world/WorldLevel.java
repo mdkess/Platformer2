@@ -91,7 +91,7 @@ public class WorldLevel implements IUpdateable, Disposable {
                 }
             }
         }
-        System.out.println(mCollisions.size() + " collisions found");
+        Gdx.app.log(Constants.LOG, mCollisions.size() + " collisions found");
         return mCollisions;
     }
     private Random mRandom = new Random();
@@ -108,7 +108,7 @@ public class WorldLevel implements IUpdateable, Disposable {
                         entity.getPositionX() + deltaX * x, entity.getPositionY() + deltaY * y,
                         entity.getVelocityX() + (mRandom.nextFloat() - 0.5f) * 10, 20,
                         entity.getWidth() / pixels.length, entity.getHeight() / pixels[x].length,
-                        particleMass, 0.8f,
+                        particleMass,
                         animation);
                 particle.setCanBeInteractedWith(false);
 

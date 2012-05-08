@@ -49,7 +49,7 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
      * These represent where the entity is within the world.
      */
     //The current position of the object. This is valid after update() has been called.
-    private Vector2 mPosition;
+    protected Vector2 mPosition;
     public float getPositionX() { return mPosition.x; }
     public float getPositionY() { return mPosition.y; }
     //WARNING: Be careful that you don't set to an invalid position.
@@ -59,7 +59,7 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
     //The position of the object, after the previous iteration of update() was called.
     private Vector2 mPreviousPosition;
     //The velocity of the entity, in world space (1 = 1 tile/second).
-    private Vector2 mVelocity;
+    protected Vector2 mVelocity;
     public void setVelocityX(float x) { mVelocity.x = x; }
     public void setVelocityY(float y) { mVelocity.y = y; }
     public void setVelocity(float x, float y) { mVelocity.set(x, y); }
@@ -67,10 +67,13 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
     public float getVelocityY() { return mVelocity.y; }
     
     //The absolute value of the maximum speed in either direction.
-    private Vector2 mMaximumSpeed;
+    protected Vector2 mMaximumSpeed;
+    public void setMaximumSpeed(float x, float y) {
+        mMaximumSpeed.set(x, y);
+    }
     
     // The width and height of the bounding box which contains the entity.
-    private Vector2 mAABB;
+    protected Vector2 mAABB;
     public void setWidth(float width) { mAABB.x = width; }
     public float getWidth() { return mAABB.x; }
     public void setHeight(float height) { mAABB.y = height; }
@@ -125,21 +128,25 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
      * they are touching parts of the world. 
      */
     //Whether the entity is touching the ground on its bottom side.
-    private boolean mIsOnGround = false;
+    protected boolean mIsOnGround = false;
     public boolean isOnGround() { return mIsOnGround; }
     
     //Whether the entity is touching a wall on its left side.
-    private boolean mIsOnWallLeft = false;
+    protected boolean mIsOnWallLeft = false;
     public boolean isOnWallLeft() { return mIsOnWallLeft; }
     
     //Whether the entity is touching a wall on its right side.
-    private boolean mIsOnWallRight = false;
+    protected boolean mIsOnWallRight = false;
     public boolean isOnWallRight() { return mIsOnWallRight; }
     
     //Whether the entity is touching a wall on its top side.
-    private boolean mIsOnRoof = false;
+    protected boolean mIsOnRoof = false;
     public boolean isOnRoof() { return mIsOnRoof; }
 
+    //Whether the entity bounced last update.
+    private boolean mBounced = false;
+    public boolean bounced() { return mBounced; }
+    
     // Trigger called when an entity touches a blocking tile on its left side
     // when they were not touching it previously.
     public void onTouchWallLeft(Vector2 impactVelocity) {
@@ -207,7 +214,7 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
      * 
      * These are the objects that the PhysicalEntity needs to access to do its good work.
      */
-    private WorldLevel mWorldLevel;
+    protected WorldLevel mWorldLevel;
     public WorldLevel getWorld() { return mWorldLevel; }
 
     // The entity's animation. Updated in update.
@@ -282,7 +289,7 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
 
     //Open a door, if it's in front of the entity
     //TODO: This should really be an "Interact with tile" sort of function.
-    public void openDoor() {
+    public boolean openDoor() {
         Gdx.app.log(Constants.LOG, "PhysicalEntity::openDoor");
 
         float x = mPosition.x;
@@ -295,8 +302,9 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
 
         Tile tile = mWorldLevel.getTile((int)Math.floor(x), (int)Math.floor(y));
         if(tile != null) {
-        	tile.onInteraction(this);
+            return tile.onInteraction(this);
         }
+        return false;
     }
     
 
@@ -313,11 +321,13 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
         }
     }
     
-    public void onInteraction(PhysicalEntity other) {
+    public boolean onInteraction(PhysicalEntity other) {
         if(this.canBeInteractedWith()){
             mWorldLevel.killEntity(this);
             mWorldLevel.removeEntity(this);
+            return true;
         }
+        return false;
     }
 
     public boolean collidesWith(PhysicalEntity other) {
@@ -382,11 +392,14 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
     Vector2 update_Gravity = new Vector2();       //LOCAL VARIABLE: Only to be used in update()!
     Vector2 update_Friction = new Vector2();      //LOCAL VARIABLE: Only to be used in update()!
     @Override
-    public final void update() {
-        mAnimationTime += Constants.DELTA;
-
-        preUpdate();
+    public void update() {
+        //Copy the state flags to determine when to fire triggers.
+        boolean wasOnGround = isOnGround();
+        boolean wasOnWallLeft = isOnWallLeft();
+        boolean wasOnWallRight = isOnWallRight();
+        boolean wasOnRoof = isOnRoof();
         
+        mAnimationTime += Constants.DELTA;
         if(mAffectedByGravity) {
             Vector2 gravity = mWorldLevel.getGravity();
             update_Gravity.set(gravity);
@@ -395,11 +408,13 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
         }
         applyForce(update_Gravity.x * mMass, update_Gravity.y * mMass);
         update_Friction.set(0,0);
-        calculateFriction(update_Friction, update_Gravity);
+        if(mAffectedByGravity) {
+            calculateFriction(update_Friction, update_Gravity);
+        }
 
         //F = m * a => a = F / m
         update_Acceleration.set(mAppliedForces.x / mMass, mAppliedForces.y / mMass);
-        
+
         mVelocity.x += update_Acceleration.x * Constants.DELTA;
         mVelocity.y += update_Acceleration.y * Constants.DELTA;
         
@@ -430,7 +445,6 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
                 mVelocity.y = 0;
             }
         }
-        
         //Now try to move
         float deltaX;
         float deltaY;
@@ -442,21 +456,50 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
         float deltaYprev = mVelocity.y * Constants.DELTA;
 
         if(!mCheckCollisions) {
+            //We don't check collisions, so just update the entity's position and be done with it.
+            //NOTE: No triggers will ever be fired here.
+            
             mPosition.x += deltaXprev;
             mPosition.y += deltaYprev;
         } else {
+            //First, move the character as far along the X axis as we can.
+            //This is somewhat easier, because there is no gravity to worry about.
             deltaX = mWorldLevel.getPenetrationDepthX(mPosition, deltaXprev, mAABB);
             mPosition.x += deltaX;
 
+            //If we collided with something.
             if(deltaX != deltaXprev) {
+                if(deltaXprev < 0) {
+                    if(!wasOnWallLeft) {
+                        mIsOnWallLeft = true;
+                        onTouchWallLeft(mVelocity);
+                    }
+                } else if(deltaXprev > 0) {
+                    if(!wasOnWallRight) {
+                        mIsOnWallRight = true;
+                        onTouchWallRight(mVelocity);
+                    }
+                }
                 mVelocity.x = 0;
+            } else {
+                mIsOnWallLeft = mIsOnWallRight = false;
             }
 
             deltaY = mWorldLevel.getPenetrationDepthY(mPosition, deltaYprev, mAABB);
             mPosition.y += deltaY;
-            //TODO: This can probably be simplified
-            //TODO: Fix triggers here!
+            
             if(deltaY != deltaYprev) {
+                if(deltaYprev < 0) {
+                    if(!wasOnGround) {
+                        mIsOnGround = true;
+                        onTouchGround(mVelocity);
+                    }
+                } else if(deltaYprev > 0) {
+                    if(!wasOnRoof) {
+                        mIsOnRoof = true;
+                        onTouchRoof(mVelocity);
+                    }
+                }
                 if(deltaY < 0) {
                     //Apply bounciness
                     float deltaDelta = deltaY - deltaYprev;  //how much we overshot by
@@ -469,20 +512,26 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
                         if(newDeltaY != deltaDelta) {
                             mVelocity.y = 0;
                         }
-                    } else {
-                        mVelocity.y = 0;
                     }
+                } else {
+                    mVelocity.y = 0;
+                }
+            } else {
+                mIsOnRoof = mIsOnGround = false;
+            }
+            
+            /*
+            if(deltaY != deltaYprev) {
+
                     //TODO: Update the position again
                 } else if (deltaY == 0) {
                     mVelocity.y = 0;
                 } else {
                     mVelocity.y = 0;
                 }
-            }
+            }*/
         }
 
-        updateFlags();
-        
         //Cap velocity.
         if(mVelocity.x > mMaximumSpeed.x) {
             mVelocity.x = mMaximumSpeed.x;
@@ -490,39 +539,34 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
             mVelocity.x = -mMaximumSpeed.x;
         }
         
-        if(mIsOnGround && mApplyDrag) {
+        if(!mIsOnGround && mApplyDrag) {
             if(mVelocity.x > -Constants.MINIMUM_GROUND_VELOCITY && mVelocity.x < Constants.MINIMUM_GROUND_VELOCITY) {
                 mVelocity.x = 0;
             }
         }
         
-        postUpdate();
         resetForces();
     }
     
-    // Update the contact flags.
-    // TODO: This results in another physics computation, so we may want
-    // to be smart about this (ie. only compute if we care about it). That said,
-    // some of the flags are important to the physics.
-    private void updateFlags() {
-        mIsOnGround    = mWorldLevel.getPenetrationDepthY(mPosition, -0.1f, mAABB) == 0;
-        mIsOnRoof      = mWorldLevel.getPenetrationDepthY(mPosition,  0.1f, mAABB) == 0;
-        mIsOnWallLeft  = mWorldLevel.getPenetrationDepthX(mPosition, -0.1f, mAABB) == 0;
-        mIsOnWallRight = mWorldLevel.getPenetrationDepthX(mPosition,  0.1f, mAABB) == 0;
-        
-    }
-    
     /**
-     * This is called before the update logic is run (forces are reset)
+     * Returns whether the entity can be hit by projectiles/weapons.
+     * NOTE that the damage() function should handle whether the projectile
+     * actually deals damage.
      */
-    public void preUpdate() {
-        
+    public boolean canBeDamaged() {
+        return true;
     }
-    /**
-     * This is called after the update logic is run.
-     */
-    public void postUpdate() {
-        
+    //TODO: Eventually we'll want to have different damage
+    // types here.
+    private int mHealth = 3;
+    private int mMaximumHealth = 3;
+    public void damage(int amount) {
+        Gdx.app.log(Constants.LOG, "I was just damaged for " + amount + "!");
+        mHealth -= amount;
+        if(mHealth <= 0) {
+            kill();
+            recycle();
+        }
     }
     
     //These methods are called when two entities collide.
@@ -548,6 +592,5 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
     @Override
     public void dispose() {
     }
-
 
 }

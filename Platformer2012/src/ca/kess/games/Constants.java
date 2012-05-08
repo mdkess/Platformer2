@@ -61,13 +61,13 @@ public class Constants {
     /**
      * How much thrust is applied when the hero is jumping.
      */
-    public static final float HERO_JUMP_FORCE = 1000.0f;
+    public static final float HERO_JUMP_FORCE = 1200.0f;
     
     /**
      * How many (physics) frames the hero can jump for. This should be part of a degrading thrust function
      * to allow for variable height jumps.
      */
-    public static final int HERO_JUMP_THRUST_FRAMES = 1; //How many frames the player gets a boost for holding the jump key for.
+    public static final int HERO_JUMP_THRUST_FRAMES = 0; //How many frames the player gets a boost for holding the jump key for.
     
     /**
      * The force of gravity, in the -Y direction.

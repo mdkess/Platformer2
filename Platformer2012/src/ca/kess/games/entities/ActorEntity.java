@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import ca.kess.games.Constants;
+import ca.kess.games.weapons.Weapon;
 import ca.kess.games.world.WorldLevel;
 
 import com.badlogic.gdx.Gdx;
@@ -14,6 +15,8 @@ import com.badlogic.gdx.math.Vector2;
  * An ActorEntity is a ActorEntity that is designed to represent a creature within the game.
  */
 public class ActorEntity extends PhysicalEntity {
+    private Weapon mEquippedWeapon = null;
+    
     public ActorEntity() {
         super();
     }
@@ -24,28 +27,27 @@ public class ActorEntity extends PhysicalEntity {
             float vx, float vy,
             float width, float height,
             float mass,
-            float bounciness,
             Animation animation) {
         Gdx.app.log(Constants.LOG, "ActorEntity::initialize");
-        initializeBase(worldLevel, x, y, vx, vy, width, height, mass, bounciness, animation);
+        initializeBase(worldLevel, x, y, vx, vy, width, height, mass, 0, animation);
         return this;
     }
     
     @Override
     public void onTouchWallLeft(Vector2 impactVelocity) {
-        Gdx.app.log(Constants.LOG, "ActorEntity::onTouchWallLeft: " + impactVelocity);
+        //Gdx.app.log(Constants.LOG, "ActorEntity::onTouchWallLeft: " + impactVelocity);
     }
     
 
     @Override
     public void onTouchWallRight(Vector2 impactVelocity) {
-        Gdx.app.log(Constants.LOG, "ActorEntity::onTouchWallRight: " + impactVelocity);
+        //Gdx.app.log(Constants.LOG, "ActorEntity::onTouchWallRight: " + impactVelocity);
     }
     
 
     @Override
     public void onTouchGround(Vector2 impactVelocity) {
-        Gdx.app.log(Constants.LOG, "ActorEntity::onTouchGround: " + impactVelocity);
+        //Gdx.app.log(Constants.LOG, "ActorEntity::onTouchGround: " + impactVelocity);
         if(impactVelocity.y < -50.0) {
             kill();
             getWorld().killEntity(this);
@@ -55,7 +57,7 @@ public class ActorEntity extends PhysicalEntity {
     
     @Override
     public void onTouchRoof(Vector2 impactVelocity) {
-        Gdx.app.log(Constants.LOG, "ActorEntity::onTouchRoof: " + impactVelocity);
+        //Gdx.app.log(Constants.LOG, "ActorEntity::onTouchRoof: " + impactVelocity);
     }
     
     @Override
@@ -63,13 +65,41 @@ public class ActorEntity extends PhysicalEntity {
         //If we're on a wall, and we're falling down, apply an upward
         //force on the entity. This represents the character grabbing
         //the wall on the way down.
-        if((isOnWallLeft() || isOnWallRight()) && getVelocityY() < 0) {
-            //Take the force as gravity, only against the wall.
-            frictionOut.y = -Constants.WALL_FRICTION * gravity.y * getMass();
-        }
+        //We don't compute if the player is in a "tube", this is so that
+        //the player can slide down easily.
+        /* TODO: Removing this for now, until I can make it feel better
+        if(getVelocityY() < 0) {
+            boolean touchingWallLeft = mWorldLevel.getPenetrationDepthX(mPosition, -0.1f, mAABB) == 0;
+            boolean touchingWallRight = mWorldLevel.getPenetrationDepthX(mPosition,  0.1f, mAABB) == 0;
+            if(touchingWallLeft != touchingWallRight) {
+                //Take the force as gravity, only against the wall.
+                frictionOut.y = -Constants.WALL_FRICTION * gravity.y * getMass();
+            }
+        }*/
         super.calculateFriction(frictionOut, gravity);
     }
 
+    /**
+     * Use the equipped weapon to attack.
+     */
+    public void attack() {
+        if(mEquippedWeapon != null) {
+            mEquippedWeapon.attack(this);
+        }
+    }
+    
+    /**
+     * For the ActorEntity, there are additional flags that the character can
+     * enable.
+     */
+    @Override
+    public void update() {
+        super.update();
+        if(mEquippedWeapon != null) {
+            mEquippedWeapon.update();
+        }
+        
+    }
     
     /**
      * Some boilerplate code for the internal object pool.
@@ -116,5 +146,10 @@ public class ActorEntity extends PhysicalEntity {
         for(ActorEntity entity : sAvailableActors) {
             entity.dispose();
         }
+    }
+
+    public void equipWeapon(Weapon weapon) {
+        Gdx.app.log(Constants.LOG, "Equipping weapon " + weapon);
+        mEquippedWeapon = weapon;
     }
 }

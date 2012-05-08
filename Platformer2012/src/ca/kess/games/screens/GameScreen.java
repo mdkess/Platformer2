@@ -11,8 +11,11 @@ import ca.kess.games.entities.ActorEntity;
 import ca.kess.games.entities.ChestEntity;
 import ca.kess.games.entities.PhysicalEntity;
 import ca.kess.games.graphics.GraphicsCache;
-import ca.kess.games.input.InputHandler;
+import ca.kess.games.input.EntityController;
+import ca.kess.games.input.KeyboardInputHandler;
+import ca.kess.games.input.SimpleAIController;
 import ca.kess.games.ui.GameButton;
+import ca.kess.games.weapons.Bow;
 import ca.kess.games.world.WorldLevel;
 
 import com.badlogic.gdx.Game;
@@ -49,8 +52,8 @@ public class GameScreen extends PlatformerScreen {
     private final Button mSuicideButton;
     private final Button mReviveButton;
     
-    private final List<InputHandler> mInputHandlers = new LinkedList<InputHandler>();
-    private final List<InputHandler> mKeyboardListeners = new LinkedList<InputHandler>();
+    private final List<EntityController> mControllers = new LinkedList<EntityController>();
+    private final List<KeyboardInputHandler> mKeyboardListeners = new LinkedList<KeyboardInputHandler>();
     public GameScreen(Game game) {
         super(game);
         mFont = new BitmapFont();
@@ -61,7 +64,7 @@ public class GameScreen extends PlatformerScreen {
         mStage = new Stage(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true) {
             @Override
             public boolean keyDown(int keycode) {
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     if(keycode == Keys.A || keycode == Keys.LEFT){
                         inputHandler.setLeftPressed(true);
                     } else if(keycode == Keys.D || keycode == Keys.RIGHT){
@@ -81,7 +84,7 @@ public class GameScreen extends PlatformerScreen {
 
             @Override
             public boolean keyUp(int keycode) {
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     if(keycode == Keys.A || keycode == Keys.LEFT){
                         inputHandler.setLeftPressed(false);
                     } else if(keycode == Keys.D || keycode == Keys.RIGHT){
@@ -107,30 +110,38 @@ public class GameScreen extends PlatformerScreen {
                 0, 0,
                 1, 1,
                 1,
-                0,
                 new Animation(0.0f, GraphicsCache.getChar(10,0)));
-        registerKeyboardListener(new InputHandler(mHero)); 
+        registerKeyboardListener(new KeyboardInputHandler(mHero));
+        mHero.equipWeapon(new Bow());
         mWorldLevel.addEntity(mHero);
+        
+        ActorEntity monster = ActorEntity.GetActorEntity().initialize(mWorldLevel,
+                2, 2,
+                0, 0,
+                1, 1,
+                1,
+                new Animation(0.0f, GraphicsCache.getChar(8,8)));
+        registerController(new SimpleAIController(monster));
+        mWorldLevel.addEntity(monster);
         
         mCamera = new MarioCamera(new OrthographicCamera(Gdx.graphics.getWidth()/(Constants.TILE_SIZE*Constants.ZOOM_FACTOR), Gdx.graphics.getHeight()/(Constants.TILE_SIZE*Constants.ZOOM_FACTOR)), mHero
             , new Rectangle(300, 200, Gdx.graphics.getWidth() - 600, Gdx.graphics.getHeight() - 400));
 
         for(int i = 0; i < 128; i += 16) {
-            PhysicalEntity obj = ActorEntity.GetActorEntity().initialize(mWorldLevel, 0, 0, 0, 0, 1, 1, 1, 0.5f,
+            PhysicalEntity obj = ActorEntity.GetActorEntity().initialize(mWorldLevel, 0, 0, 0, 0, 1, 1, 1,
                     new Animation(0.1f,
                             GraphicsCache.getObject(0, 7),
                             GraphicsCache.getObject(1, 7),
                             GraphicsCache.getObject(2, 7),
                             GraphicsCache.getObject(1, 7)));
             
-            //TODO: Add chest to entity pool
             ChestEntity chest = ChestEntity.GetChestEntity().initialize(mWorldLevel,
                     i, 100, 0, 0, 1, 1, 1, 0.5f, 
                     new Animation(0.0f, GraphicsCache.getObject(1, 0)),
                     new Animation(0.0f, GraphicsCache.getObject(2, 0)), obj);
             mWorldLevel.addEntity(chest);
         }
-        
+
         TextureRegion flip = new TextureRegion(GraphicsCache.getInterface(5, 2));
         flip.flip(true, false);
         
@@ -138,7 +149,7 @@ public class GameScreen extends PlatformerScreen {
             @Override
             public boolean touchDown(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "LeftButton::touchDown(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setLeftPressed(true);
                 }
                 return true;
@@ -147,16 +158,17 @@ public class GameScreen extends PlatformerScreen {
             @Override
             public void touchUp(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "LeftButton::touchUp(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setLeftPressed(false);
                 }
             }
         };
         
         mRightButton = new GameButton(GraphicsCache.getInterface(5,2)) {
+            @Override
             public boolean touchDown(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "RightButton::touchDown(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setRightPressed(true);
                 }
                 return true;
@@ -165,16 +177,17 @@ public class GameScreen extends PlatformerScreen {
             @Override
             public void touchUp(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "RightButton::touchUp(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setRightPressed(false);
                 }
             }
         };
 
         mJumpButton = new GameButton(GraphicsCache.getInterface(2, 1)) {
+            @Override
             public boolean touchDown(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "JumpButton::touchDown(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setJumpPressed(true);
                 }
                 return true;
@@ -182,16 +195,17 @@ public class GameScreen extends PlatformerScreen {
             @Override
             public void touchUp(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "JumpButton::touchUp(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setJumpPressed(false);
                 }
             }
         };
 
         mInteractButton = new GameButton(GraphicsCache.getInterface(2, 0)) {
+            @Override
             public boolean touchDown(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "InteractButton::touchDown(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setInteractPressed(true);
                 }
                 return true;
@@ -199,16 +213,17 @@ public class GameScreen extends PlatformerScreen {
             @Override
             public void touchUp(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "InteractButton::touchUp(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setInteractPressed(false);
                 }
             }
         };
         
         mSuicideButton = new GameButton(GraphicsCache.getObject(3, 1)) {
+            @Override
             public boolean touchDown(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "SuicideButton::touchDown(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setSuicidePressed(true);
                 }
                 return true;
@@ -216,15 +231,16 @@ public class GameScreen extends PlatformerScreen {
             @Override
             public void touchUp(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "SuicideButton::touchUp(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setSuicidePressed(false);
                 }
             }
         };
         mReviveButton = new GameButton(GraphicsCache.getInterface(9, 1)) {
+            @Override
             public boolean touchDown(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "ReviveButton::touchDown(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setResetPressed(true);
                 }
                 return super.touchDown(x, y, pointer);
@@ -232,7 +248,7 @@ public class GameScreen extends PlatformerScreen {
             @Override
             public void touchUp(float x, float y, int pointer) {
                 Gdx.app.log(Constants.LOG, "ReviveButton::touchUp(" + pointer + ")");
-                for(InputHandler inputHandler : mKeyboardListeners) {
+                for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                     inputHandler.setResetPressed(false);
                 };
                 super.touchUp(x, y, pointer);
@@ -253,12 +269,12 @@ public class GameScreen extends PlatformerScreen {
 
     }
     
-    private void registerKeyboardListener(InputHandler inputHandler) {
+    private void registerKeyboardListener(KeyboardInputHandler inputHandler) {
         mKeyboardListeners.add(inputHandler); 
     }
 
-    private void registerInputHandler(InputHandler inputHandler) {
-        mInputHandlers.add(inputHandler);
+    private void registerController(EntityController controller) {
+        mControllers.add(controller);
     }
 
     private void initGUI() {
@@ -306,8 +322,11 @@ public class GameScreen extends PlatformerScreen {
         int iters = 0;
         while(mAccumulator >= Constants.DELTA) {
             ++iters;
-            for(InputHandler inputHandler : mKeyboardListeners) {
+            for(KeyboardInputHandler inputHandler : mKeyboardListeners) {
                 inputHandler.update();
+            }
+            for(EntityController controller : mControllers) {
+                controller.update();
             }
             mWorldLevel.update();
             mAccumulator -= Constants.DELTA;
