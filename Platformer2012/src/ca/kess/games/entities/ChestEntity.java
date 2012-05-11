@@ -62,12 +62,7 @@ public class ChestEntity extends PhysicalEntity {
         }
         return false;
     }
-    
-    @Override
-    public boolean canBeDamaged() {
-        return false;
-    }
-    
+
     @Override
     public void recycle() {
         Gdx.app.log(Constants.LOG, "GameEntity::recycle");

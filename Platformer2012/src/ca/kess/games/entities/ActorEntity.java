@@ -9,6 +9,7 @@ import ca.kess.games.world.WorldLevel;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
 /**
@@ -16,6 +17,11 @@ import com.badlogic.gdx.math.Vector2;
  */
 public class ActorEntity extends PhysicalEntity {
     private Weapon mEquippedWeapon = null;
+    //Whether the entity is damaged on collision with another entity. True for the player
+    private boolean mDamagedOnCollision = false;
+    public void setDamagedOnCollision(boolean damagedOnCollision) {
+    	mDamagedOnCollision = damagedOnCollision;
+    }
     
     public ActorEntity() {
         super();
@@ -87,18 +93,47 @@ public class ActorEntity extends PhysicalEntity {
             mEquippedWeapon.attack(this);
         }
     }
-    
+
     /**
      * For the ActorEntity, there are additional flags that the character can
      * enable.
      */
     @Override
     public void update() {
+    	if(mInvincibilityCountdown > 0) {
+    		mInvincibilityCountdown -= Constants.DELTA;
+    	}
         super.update();
         if(mEquippedWeapon != null) {
             mEquippedWeapon.update();
         }
-        
+        if(mDamagedOnCollision && !isInvincible()) {
+        	 for(PhysicalEntity entity : getWorld().getCollisions(this, true)) {
+                 if(entity.damagesPlayerOnCollision()) {
+                     mInvincibilityCountdown = Constants.INVINCIBILITY_TIME;
+                     //Knock the entity back
+                     setVelocity(10 * Math.signum(getPositionX() - entity.getPositionX()), 20);
+                 }
+             }
+        }
+    }
+    
+    // The entity can be invincible for some time after they are damaged.
+    float mInvincibilityCountdown = 0.0f;
+    public boolean isInvincible() {
+    	return mInvincibilityCountdown > 0;
+    }
+    
+    @Override
+    public void render(SpriteBatch b) {
+    	if(isInvincible()) {
+    		float sineWave = (float) ((0.02 * (double) System.currentTimeMillis()) % (2. * Math.PI));
+    		System.out.println(0.1 * (double)System.currentTimeMillis());
+    		setAlpha((float) (0.5f + 0.5f * Math.sin(sineWave)));
+    	} else {
+    		setAlpha(1.0f);
+    	}
+    	super.render(b);
     }
     
     /**

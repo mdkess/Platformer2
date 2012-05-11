@@ -12,6 +12,6 @@ public abstract class Projectile extends PhysicalEntity {
             }
         }
     }
-    
+
     public abstract void handleCollision(PhysicalEntity entity);
 }

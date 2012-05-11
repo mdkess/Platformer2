@@ -28,7 +28,7 @@ public class Constants {
     /**
      * How far the camera is zoomed in. ZOOM_FACTOR * TILE_SIZE determines the relative size of a pixel.
      */
-    public static final int ZOOM_FACTOR = 2;
+    public static final int ZOOM_FACTOR = 4;
     
     /**
      * The size of a tile, in pixels.
@@ -87,5 +87,10 @@ public class Constants {
     public static final int SKIP_FRAMES = 3;
     
     public static final String LOG = "mdkess-platformer";
+
+    /**
+     * How long the player is invincible for after being damaged by an enemy.
+     */
+	public static final float INVINCIBILITY_TIME = 1.0f;
 
 }

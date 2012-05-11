@@ -553,9 +553,23 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
      * NOTE that the damage() function should handle whether the projectile
      * actually deals damage.
      */
-    public boolean canBeDamaged() {
-        return true;
+    private boolean mCanBeDamaged = false;
+    public final boolean canBeDamaged() {
+        return mCanBeDamaged;
     }
+    public final void setCanBeDamaged(boolean canBeDamaged) {
+    	mCanBeDamaged = canBeDamaged;
+    }
+    
+    
+    private boolean mDamagesPlayerOnCollision = false;
+    public final boolean damagesPlayerOnCollision() {
+    	return mDamagesPlayerOnCollision;
+    }
+    public final void setDamagesPlayerOnCollision(boolean damagesPlayerOnCollision) {
+    	mDamagesPlayerOnCollision = damagesPlayerOnCollision;
+    }
+    
     //TODO: Eventually we'll want to have different damage
     // types here.
     private int mHealth = 3;

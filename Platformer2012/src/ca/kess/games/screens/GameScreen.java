@@ -113,7 +113,10 @@ public class GameScreen extends PlatformerScreen {
                 new Animation(0.0f, GraphicsCache.getChar(10,0)));
         registerKeyboardListener(new KeyboardInputHandler(mHero));
         mHero.equipWeapon(new Bow());
+        mHero.setDamagedOnCollision(true);
+        mHero.setCanBeDamaged(true);
         mWorldLevel.addEntity(mHero);
+        
         
         ActorEntity monster = ActorEntity.GetActorEntity().initialize(mWorldLevel,
                 2, 2,
@@ -122,6 +125,8 @@ public class GameScreen extends PlatformerScreen {
                 1,
                 new Animation(0.0f, GraphicsCache.getChar(8,8)));
         registerController(new SimpleAIController(monster));
+        monster.setDamagesPlayerOnCollision(true);
+        monster.setCanBeDamaged(true);
         mWorldLevel.addEntity(monster);
         
         mCamera = new MarioCamera(new OrthographicCamera(Gdx.graphics.getWidth()/(Constants.TILE_SIZE*Constants.ZOOM_FACTOR), Gdx.graphics.getHeight()/(Constants.TILE_SIZE*Constants.ZOOM_FACTOR)), mHero
