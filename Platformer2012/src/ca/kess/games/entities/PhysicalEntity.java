@@ -281,6 +281,8 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
         mAlpha = 1.0f;
         mMass = mass;
         mAlive = true;
+        
+        mVisible = true;
         return this;
     }
 

@@ -111,7 +111,7 @@ public class WorldLevel implements IUpdateable, Disposable {
                         particleMass,
                         animation);
                 particle.setCanBeInteractedWith(false);
-
+                particle.setBounciness(0.5f);
                 addEntity(particle);
                 addTimer(new DeathFadeTimer(particle, 3.0f));
             }
