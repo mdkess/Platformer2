@@ -309,12 +309,6 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
         return false;
     }
     
-
-
-    
-    
-
-    
     @Override
     public void render(SpriteBatch b) {
         if(this.isVisible()) {

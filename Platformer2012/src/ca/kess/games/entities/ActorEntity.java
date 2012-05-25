@@ -4,18 +4,44 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import ca.kess.games.Constants;
+import ca.kess.games.graphics.GraphicsCache;
 import ca.kess.games.weapons.Weapon;
 import ca.kess.games.world.WorldLevel;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 /**
  * An ActorEntity is a ActorEntity that is designed to represent a creature within the game.
  */
 public class ActorEntity extends PhysicalEntity {
+	
+	public enum Icon {
+		NONE(null, Color.WHITE),
+		EXCLAMATION(GraphicsCache.getInterface(14, 6), Color.YELLOW),
+		QUESTION(GraphicsCache.getInterface(14, 7), Color.CYAN),
+		HEART(GraphicsCache.getInterface(1, 7), Color.RED)
+		;
+		private final TextureRegion mTextureRegion;
+		private final Color mColor;
+		private Icon(TextureRegion textureRegion, Color color) {
+			mTextureRegion = textureRegion;
+			mColor = color;
+		}
+		public TextureRegion getTextureRegion() {
+			return mTextureRegion;
+		}
+		public Color getColor() {
+			return mColor;
+		}
+	}
+	
+	private Icon mIcon = Icon.HEART;
+	
     private Weapon mEquippedWeapon = null;
     //Whether the entity is damaged on collision with another entity. True for the player
     private boolean mDamagedOnCollision = false;
@@ -126,14 +152,20 @@ public class ActorEntity extends PhysicalEntity {
     
     @Override
     public void render(SpriteBatch b) {
+    	/*
     	if(isInvincible()) {
     		float sineWave = (float) ((0.02 * (double) System.currentTimeMillis()) % (2. * Math.PI));
     		System.out.println(0.1 * (double)System.currentTimeMillis());
     		setAlpha((float) (0.5f + 0.5f * Math.sin(sineWave)));
     	} else {
     		setAlpha(1.0f);
-    	}
+    	}*/
     	super.render(b);
+    	if(mIcon != Icon.NONE) {
+	    	b.setColor(mIcon.getColor());
+	    	b.draw(mIcon.getTextureRegion(), mPosition.x, mPosition.y + mAABB.y, 0, 0, 1, 1, 1, 1, 0);
+    	}
+    	
     }
     
     /**

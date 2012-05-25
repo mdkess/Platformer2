@@ -3,7 +3,6 @@ package ca.kess.games.weapons;
 import ca.kess.games.entities.ActorEntity;
 import ca.kess.games.entities.PhysicalEntity.Direction;
 import ca.kess.games.graphics.GraphicsCache;
-import ca.kess.games.weapons.projectiles.GravityArrow;
 import ca.kess.games.weapons.projectiles.SimpleArrow;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -20,7 +19,7 @@ public class Bow extends Weapon {
 
     @Override
     public float cooldownTime() {
-        return 1f;
+        return 0.1f;
     }
 
     @Override

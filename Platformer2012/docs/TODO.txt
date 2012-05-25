@@ -14,3 +14,9 @@ Ideas:
 BUGS
 
 Can't double jump when falling with block above head.
+
+
+
+We need a better animation system. This should be separated from the other thing. Instead, we should have an
+example of PlayEffect(new SomethingEffect());
+

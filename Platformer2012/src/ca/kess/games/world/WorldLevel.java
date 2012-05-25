@@ -91,7 +91,7 @@ public class WorldLevel implements IUpdateable, Disposable {
                 }
             }
         }
-        Gdx.app.log(Constants.LOG, mCollisions.size() + " collisions found");
+		//Gdx.app.log(Constants.LOG, mCollisions.size() + " collisions found");
         return mCollisions;
     }
     private Random mRandom = new Random();
