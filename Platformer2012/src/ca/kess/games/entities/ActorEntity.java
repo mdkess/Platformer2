@@ -40,7 +40,7 @@ public class ActorEntity extends PhysicalEntity {
 		}
 	}
 	
-	private Icon mIcon = Icon.HEART;
+	private Icon mIcon = Icon.NONE;
 	
     private Weapon mEquippedWeapon = null;
     //Whether the entity is damaged on collision with another entity. True for the player
@@ -162,8 +162,12 @@ public class ActorEntity extends PhysicalEntity {
     	}*/
     	super.render(b);
     	if(mIcon != Icon.NONE) {
-	    	b.setColor(mIcon.getColor());
+    		Color c = mIcon.getColor();
+	    	b.setColor(c.r, c.g, c.b, this.mAlpha);
 	    	b.draw(mIcon.getTextureRegion(), mPosition.x, mPosition.y + mAABB.y, 0, 0, 1, 1, 1, 1, 0);
+    	}
+    	if(mEquippedWeapon != null) {
+    		mEquippedWeapon.render(b, this);
     	}
     	
     }

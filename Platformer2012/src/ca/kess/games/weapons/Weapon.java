@@ -1,9 +1,10 @@
 package ca.kess.games.weapons;
 
-import com.badlogic.gdx.Gdx;
-
 import ca.kess.games.Constants;
 import ca.kess.games.entities.ActorEntity;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 /**
  * A weapon is something that can shoot. All weapons must implement this interface,
@@ -56,6 +57,10 @@ public abstract class Weapon {
             Gdx.app.log(Constants.LOG, "Need to wait " + mCooldownTimeRemaining + "s to fire");
         }
         return false;
+    }
+    
+    public void render(SpriteBatch b, ActorEntity owner) {
+    	//do nothing
     }
     
     /**

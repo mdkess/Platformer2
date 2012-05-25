@@ -225,7 +225,7 @@ public abstract class PhysicalEntity extends GameEntity implements IRenderable, 
     
     // Alpha for the entity. Probably should be used as a color mask, but for now can
     // be used to make the entity less visible.
-    private float mAlpha;
+    protected float mAlpha;
     public void setAlpha(float alpha) { mAlpha = alpha; }
 
     // Whether the entity has been initialized.

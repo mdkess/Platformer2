@@ -15,7 +15,7 @@ import ca.kess.games.input.EntityController;
 import ca.kess.games.input.KeyboardInputHandler;
 import ca.kess.games.input.SimpleAIController;
 import ca.kess.games.ui.GameButton;
-import ca.kess.games.weapons.Bow;
+import ca.kess.games.weapons.MeleeWeapon;
 import ca.kess.games.world.WorldLevel;
 
 import com.badlogic.gdx.Game;
@@ -112,7 +112,7 @@ public class GameScreen extends PlatformerScreen {
                 1,
                 new Animation(0.0f, GraphicsCache.getChar(10,0)));
         registerKeyboardListener(new KeyboardInputHandler(mHero));
-        mHero.equipWeapon(new Bow());
+        mHero.equipWeapon(new MeleeWeapon());
         mHero.setDamagedOnCollision(true);
         mHero.setCanBeDamaged(true);
         mWorldLevel.addEntity(mHero);
